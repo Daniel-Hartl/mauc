@@ -93,15 +93,17 @@
 % 
 % Persoenliche Angaben
 % 
-\newcommand*{\IhrVornameEins}{Erika}
-\newcommand*{\IhrNachnameEins}{Musterfrau}
-\newcommand*{\IhrVornameZwei}{Thomas}
-\newcommand*{\IhrNachnameZwei}{Mustermann}
-\newcommand*{\IhreGruppe}{Gruppe 00}
-\newcommand*{\IhrStudiengang}{$\in \{$Medieninformatik,Industrie-4.0-Informatik, Künstliche Intelligenz, Ingenieurpädagogik$\}$}
+\newcommand*{\IhrVornameEins}{Johannes}
+\newcommand*{\IhrNachnameEins}{Grosch}
+\newcommand*{\IhrVornameZwei}{Daniel}
+\newcommand*{\IhrNachnameZwei}{Hartl}
+\newcommand*{\IhreGruppe}{Gruppe 42}
+\newcommand*{\IhrStudiengang}{Industrie-4.0-Informatik}
 \newcommand*{\IhreArbeit}{Projektarbeit Mobile \& Ubiquitous Computing SoSe 2024}
 \newcommand*{\IhreSchluesselwoerter}{Android, ESP32, MQTT, IoT, Pulsoximeter, MAX30100, WLAN}
 \newcommand*{\IhrErstpruefer}{Prof. Dr. Ulrich Schäfer}
+
+\newcommand{\quoteM}[1]{\glqq {1}\grqq{} }
 
 \usepackage[bookmarks, raiselinks, pageanchor, % PDF-Einstellungen
             hyperindex, colorlinks,
@@ -147,17 +149,6 @@
   Bitte passen Sie in der \LaTeX-Datei \texttt{projektarbeit.tex} am Anfang folgende 
   Zeilen an:
   
-\begin{lstlisting}{language=[LaTeX]TeX}
-\newcommand*{\IhrVornameEins}{Erika}
-\newcommand*{\IhrNachnameEins}{Musterfrau}
-\newcommand*{\IhrVornameZwei}{Thomas}
-\newcommand*{\IhrNachnameZwei}{Mustermann}
-\newcommand*{\IhreGruppe}{Gruppe M01}
-\newcommand*{\IhrStudiengang}{Medieninformatik}
-\newcommand*{\IhreArbeit}{Projektarbeit Mobile \& Ubiquitous Computing}
-\newcommand*{\IhreSchluesselwoerter}{...}
-\end{lstlisting}
-  
   Diese Literaturquellen sollten durch passende ersetzt werden: \cite{Breymann:2020,jabref,Schaefer_Spurk:2010,ct_LaTeX:2005,zotero}.
   
   Sie können die Dokumentstruktur ändern. Dies ist lediglich ein Vorschlag.
@@ -171,7 +162,15 @@
   %
   
   \section{Projektplanung und Vorgehen}
-
+  \subsection{Serielle Kommunikation}
+  Die Serielle kommunikation zwischen dem ESP und dem Laptop findet mit 10Hz statt. Um unnötigen Overhead zu vermeiden findet sie in folgender, minimalistischer Synthax statt:\par
+  \textbf{<Pulsschlag>;<Sauerstoffsättigung>}\par
+  
+  
+  
+  
+  
+  
   %
   % Implementierung
   %
@@ -180,57 +179,14 @@
   
   \section{Implementierung}
   
-  
-  
-  Ihr Code muss hier nicht vollständig wiedergegeben werden, aber evtl. interessante Ausschnitte.
-  
-  Doku s. \url{https://ctan.org/pkg/listings}
-  
-  Mit \verb|\lstinputlisting[lastline=14,language=C++]{sketch.ino}| können auch (Ausschnitte von) 
-  externen Quellcode-Dateien eingebunden werden, so dass \emph{copy \& paste} von Quellcode
-  überflüssig wird.
-  
-Es folgt ein C++-Codebeispiel (Hinweis: Umlaute ins Listings funktionieren leider nicht so gut):
-\begin{lstlisting}[language=C++]
-void setup() {
-  Serial.begin(115200);
-  // gibt etwas aus ueber die serielle Leitung:
-  Serial.println("Hallo ESP");
-}
-\end{lstlisting}
-
-
-Java geht auch, hier sieht man gleich die Javadoc-Syntax:
-\begin{lstlisting}[language=Java]
-/**
-* Ein Hallo-Welt-Programm in Java.
-* Dies ist ein Javadoc-Kommentar.
-*
-* @author Ulrich Schaefer
-* @version 1.0
-*/
-public class HalloWelt {
-/**
-* Main-Methode
-*
-* @param args Kommandozeilenparameter
-* @return Rueckgabewert
-*/
-  public static int main(String[] args) {
-    System.out.println("Hallo Welt!");
-  }
-} // Ende der Java-Klasse HalloWelt
-\end{lstlisting}
-
-
-Und zu guter Letzt noch ein XML-Beispiel: 
-\begin{lstlisting}[language=XML]
-<spitze>
-  <!-- Kommentar in XML -->
-  <klammer wert="auf"/>
-</spitze>
-\end{lstlisting}
-
+  \subsection{Änderungen an der MAX30100 Bibliothek}
+  Zur effizienteren Bedienung des Puls Oximeters wurde das Enumerate \quoteM{BoardType} hinzugefügt, das für den Wert 0 die Konstante ESP\_32 und für den Wert 1 LOLIN\_32 zuordnet.\par
+  In der Klasse PulseOximeter selbst wurde die Signatur der Methode begin() um den Parameter \quoteM{board} modifiziert:
+	\begin{lstlisting}[language=C++]
+bool begin(BoardType board, PulseOximeterDebuggingMode debuggingMode_);
+	\end{lstlisting}
+	Hierbei sind beide optional und board hat als Standardparameter ESP\_32, was den bisherigen Ablauf anstö\ss t.\par
+	Sollte die Methode mit dem Parameterwert 1 oder LOLIN\_32 aufgerufen werden, so werden die Konstanten für den SDA Pin auf 0 und die für den SCL Pin auf 4 gesetzt.
 
   %
   % Probleme und Diskussion

@@ -5,3 +5,269 @@
 *.bbl
 *.toc
 *.synctex.gz
+
+Skip to content
+All gists
+Back to GitHub
+@dedunumax
+dedunumax/.gitignore Java
+Last active May 13, 2024 05:13 • Report abuse
+
+Code
+Revisions 21
+Stars 395
+Forks 117
+Clone this repository at &lt;script src=&quot;https://gist.github.com/dedunumax/54e82214715e35439227.js&quot;&gt;&lt;/script&gt;
+A complete .gitignore file for Java.
+.gitignore Java
+##############################
+## Java
+##############################
+.mtj.tmp/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+##############################
+## Maven
+##############################
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+pom.xml.bak
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+##############################
+## Gradle
+##############################
+bin/
+build/
+.gradle
+.gradletasknamecache
+gradle-app.setting
+!gradle-wrapper.jar
+
+##############################
+## IntelliJ
+##############################
+out/
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+
+##############################
+## Eclipse
+##############################
+.settings/
+bin/
+tmp/
+.metadata
+.classpath
+.project
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.factorypath
+
+##############################
+## NetBeans
+##############################
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+##############################
+## Visual Studio Code
+##############################
+.vscode/
+.code-workspace
+
+##############################
+## OS X
+##############################
+.DS_Store
+
+##############################
+## Miscellaneous
+##############################
+*.log
+@dedunumax
+Author
+dedunumax commented Mar 18, 2020
+
+        I thought VSCode doesn't create files. Let me check and I will change the file accordingly. Thanks a lot for the suggestion.
+
+    Apparently VSCode produces pretty much the same files as Eclipse.
+    It might be reasonable to adjust the comment from "Eclipse" to "Eclipse / VSCode".
+
+Thanks a lot for the suggestion! I think they depend on the tools/extensions used with VSCode.
+@joedatlive
+joedatlive commented Mar 25, 2020
+
+How about the work space files for VSCode?
+*.code-workspace
+@alvhix
+alvhix commented Apr 29, 2020
+
+Thank you very much!
+@dedunumax
+Author
+dedunumax commented May 18, 2020
+
+    How about the work space files for VSCode?
+    *.code-workspace
+
+Done! :D
+@ckzgraphics
+ckzgraphics commented May 25, 2020
+
+Another good source- https://www.gitignore.io/
+
+Java- https://www.gitignore.io/api/java%2Cintellij
+
+Original Post- https://stackoverflow.com/a/38259237/2923098
+@dedunumax
+Author
+dedunumax commented May 25, 2020
+
+Thanks a lot, @ckzgraphics! I personally believe checked in code should be IDE neutral. I don't like adding any file related to the .idea/ folder in the repository.
+@ckzgraphics
+ckzgraphics commented May 25, 2020
+
+Yep, @dedunumax. Commented for better reach to the resource 😃
+@dedunumax
+Author
+dedunumax commented Jun 13, 2020
+
+    Yep, @dedunumax. Commented for better reach to the resource 😃
+
+Cool. :D
+@belhassenessid
+belhassenessid commented Apr 16, 2021
+
+thanks!
+@serhiihoroshko
+serhiihoroshko commented Apr 27, 2021
+
+Thanks!
+@money-seoh
+money-seoh commented May 8, 2021
+
+Thank you very much for .gitignore example for java files. It helped me a lot.
+@NedkaBlagoeva
+NedkaBlagoeva commented Aug 10, 2021
+
+I'll definitely use it, thanks for sharing :)
+@hasanhg
+hasanhg commented Sep 2, 2021
+
+Thanks!
+@gibrancastillo
+gibrancastillo commented Sep 30, 2021
+
+Thank you, one for all IDEs. :-)
+@andresfeelip29
+andresfeelip29 commented Nov 26, 2021
+
+ty;
+@rr-cory-hartford
+rr-cory-hartford commented Jan 14, 2022
+
+Rad. Thanks :)
+@OpaJaa
+OpaJaa commented Feb 8, 2022
+
+Thanks! Using macOs, Netbeans and IntelliJ so good to have comprehensive ignoring :)
+@Enter55
+Enter55 commented Feb 23, 2022
+
+I needed it I only knew it from Visual studio
+
+Thank you!
+@ecivil
+ecivil commented Apr 29, 2022
+
+Thanks ... nice job.
+Can you add *.NavData ?
+@GustavoJoaoSantos
+GustavoJoaoSantos commented Jun 7, 2022
+
+nice
+@masadamsahid
+masadamsahid commented Jul 3, 2022
+
+Its very helping me. Thanks a lot 👍
+@BrandontheDev360
+BrandontheDev360 commented Aug 4, 2022
+
+Possibly add .env for environment variables?
+@Crypter0
+Crypter0 commented Sep 30, 2022
+
+Thank you, very nice.
+@TonyGravagno
+TonyGravagno commented Oct 31, 2022
+
+Thank you for this list! Please add : ._.DS_Store
+@ChanPyaeAung11
+ChanPyaeAung11 commented Feb 26, 2023
+
+this is amazing. thx u
+@MorgooN
+MorgooN commented Jul 16, 2023
+
+Awesome, thx
+@MorgooN
+MorgooN commented Jul 17, 2023
+
+Humble suggestion about adding .xml into INTELIDEA section. Thx again
+@BenMcLean
+BenMcLean commented Jul 18, 2023
+
+    Humble suggestion about adding .xml into INTELIDEA section. Thx again
+
+Leaving that out is intentional because .xml files often are supposed to be committed.
+@Marat-Sadenov
+Marat-Sadenov commented Jan 17, 2024
+
+add please *.log
+@dedunumax
+Author
+dedunumax commented Jan 23, 2024
+
+I added log under a different section.
+@Daniel-Hartl
+Comment
+
+Leave a comment
+Footer
+© 2024 GitHub, Inc.
+Footer navigation
+
+    Terms
+    Privacy
+    Security
+    Status
+    Docs
+    Contact
+
+
