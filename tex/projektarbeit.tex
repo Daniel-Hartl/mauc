@@ -163,6 +163,7 @@
   
   \section{Projektplanung und Vorgehen}
   \subsection{Serielle Kommunikation}
+  \label{serialComunication}
   Die Serielle kommunikation zwischen dem ESP und dem Laptop findet mit 10Hz statt. Um unnötigen Overhead zu vermeiden findet sie in folgender, minimalistischer Synthax statt:\par
   \textbf{<Pulsschlag>;<Sauerstoffsättigung>}\par
   
@@ -182,12 +183,60 @@
   \subsection{Änderungen an der MAX30100 Bibliothek}
   Zur effizienteren Bedienung des Puls Oximeters wurde das Enumerate \quoteM{BoardType} hinzugefügt, das für den Wert 0 die Konstante ESP\_32 und für den Wert 1 LOLIN\_32 zuordnet.\par
   In der Klasse PulseOximeter selbst wurde die Signatur der Methode begin() um den Parameter \quoteM{board} modifiziert:
-	\begin{lstlisting}[language=C++]
+  \begin{lstlisting}[language=C++, caption={Signatur der begin() Methode}, captionpos=b]
 bool begin(BoardType board, PulseOximeterDebuggingMode debuggingMode_);
-	\end{lstlisting}
-	Hierbei sind beide optional und board hat als Standardparameter ESP\_32, was den bisherigen Ablauf anstö\ss t.\par
-	Sollte die Methode mit dem Parameterwert 1 oder LOLIN\_32 aufgerufen werden, so werden die Konstanten für den SDA Pin auf 0 und die für den SCL Pin auf 4 gesetzt.
+  \end{lstlisting}
+  Hierbei sind beide optional und board hat als Standardparameter ESP\_32, was den bisherigen Ablauf anstö\ss t.\par
+  Sollte die Methode mit dem Parameterwert 1 oder LOLIN\_32 aufgerufen werden, so werden die Konstanten für den SDA Pin auf 0 und die für den SCL Pin auf 4 gesetzt.
+  \subsection{ESP32 Code}
+  Der ESP32 wurde so programmiert, dass er nach CALLBACK\_INTERVAL Millisekunden über die Serielle Schnittstelle mit 115200 Baud, wie in \ref{serialComunication} beschrieben, die Herzfrequenz und den Sauerstoffgehalt des Blutes zur weiteren Verarbeitung an den Laptop überträgt, wo diese dann weiterverarbeitet werden können.
+  
+  \begin{lstlisting}[language=C, caption={Quellcode des ESP32-Programms}, captionpos=b, label=srcEsp]
+#include <Wire.h>
+#include "MAX30100_PulseOximeter.h"
 
+// reporting interval 100ms
+#define CALLBACK_INTERVAL 100
+
+// driver entity
+PulseOximeter oximeter;
+
+// timestap of the last output
+int lastOutputTimestamp;
+
+void setup() {
+	// intit the serial interface for 115200 Baud
+	Serial.begin(115200);
+	while(!Serial);
+	
+	// try to init the oximeter and count the failed tries and delay 500ms.
+	Serial.println("Begin initializing the oximeter");
+	
+	int initFailCounter = 0;
+	
+	while (!oximeter.begin(ESP_32)) {
+		Serial.print("Init failed ");
+		Serial.print(++initFailCounter);
+		Serial.println(" times!");
+		delay(500);
+	}
+	
+	Serial.println("Oximeter initialized");
+}
+
+void loop() {
+	// get values from oximeter.
+	oximeter.update();
+	
+	// print heartrate and o2 ratio
+	Serial.print(oximeter.getHeartRate());
+	Serial.print(";");
+	Serial.println(oximeter.getSpO2());
+	
+	delay(CALLBACK_INTERVAL);
+}
+  \end{lstlisting}
+	
   %
   % Probleme und Diskussion
   %
