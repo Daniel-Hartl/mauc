@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+
 public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMessageListener {
 
     private ActivityMainBinding binding;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
     private Timer timer;
     private boolean dataUpdated = false;
     private boolean isSavingEnabled = true;
+    private boolean isSoundEnabled = true;
 
     private String username;
 
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-         username = loadUsernameFromConfig();
+        username = loadUsernameFromConfig();
 
         databaseManager = new DatabaseManager(this);
 
@@ -91,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
             new Handler(Looper.getMainLooper()).postDelayed(this::updateView, 50);
         });
 
-
         // MQTT-Initialisierung und Verbindung, bzw. Fehlermeldung
         try {
             mqttHelper = new MqttHelper(this, this);
@@ -109,7 +110,9 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         heartbeatRunnable = new Runnable() {
             @Override
             public void run() {
-                playHeartbeat();
+                if (isSoundEnabled) {
+                    playHeartbeat();
+                }
                 heartbeatHandler.postDelayed(this, getHeartbeatInterval());
             }
         };
@@ -218,6 +221,11 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
             item.setChecked(isSavingEnabled);
             Toast.makeText(this, isSavingEnabled ? "Speichern aktiviert" : "Speichern deaktiviert", Toast.LENGTH_SHORT).show();
             return true;
+        } else if (item.getItemId() == R.id.action_toggle_sound) {
+            isSoundEnabled = !item.isChecked();
+            item.setChecked(isSoundEnabled);
+            Toast.makeText(this, isSoundEnabled ? "Herzschlag-Sound aktiviert" : "Herzschlag-Sound deaktiviert", Toast.LENGTH_SHORT).show();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -246,8 +254,7 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         }
     }
 
-
-        @Override
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mqttHelper != null) {
@@ -269,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         }
     }
 }
+
 
 
 

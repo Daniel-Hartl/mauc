@@ -8,4 +8,10 @@
         android:checkable="true"
         android:checked="true"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_toggle_sound"
+        android:title="Herzschlag ein/aus"
+        android:checkable="true"
+        android:checked="true"
+        app:showAsAction="never" />
 </menu>
