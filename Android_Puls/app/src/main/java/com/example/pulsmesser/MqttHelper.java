@@ -16,6 +16,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.nio.charset.StandardCharsets;
 
 public class MqttHelper {
 
@@ -56,7 +57,7 @@ public class MqttHelper {
         }
     }
 
-    private void loadConfig(Context context) {
+    private void loadConfig(Context context) { //Konfiguration aus der Konfigurationsdatei auslesen
         Properties properties = new Properties();
         try {
             InputStream inputStream = context.getAssets().open("mqtt_config.properties");
@@ -72,7 +73,7 @@ public class MqttHelper {
         }
     }
 
-    public void connect() {
+    public void connect() { //MQTT-Verbndungsaufbau
         mqttClient.connectWith()
                 .simpleAuth()
                 .username(username)
@@ -107,6 +108,22 @@ public class MqttHelper {
                         showToast("Abonnement fehlgeschlagen: " + throwable.getMessage());
                     } else {
                         showToast("Erfolgreich abonniert");
+                    }
+                });
+    }
+
+    public void publishMessage(String message) {
+        mqttClient.publishWith()
+                .topic(topic)
+                .payload(message.getBytes(StandardCharsets.UTF_8))
+                .qos(MqttQos.AT_LEAST_ONCE)
+                .send()
+                .whenComplete((publish, throwable) -> {
+                    if (throwable != null) {
+                        Log.e(TAG, "Publishing failed", throwable);
+                        showToast("Veröffentlichung fehlgeschlagen: " + throwable.getMessage());
+                    } else {
+                        showToast("Nachricht gesendet: " + message);
                     }
                 });
     }

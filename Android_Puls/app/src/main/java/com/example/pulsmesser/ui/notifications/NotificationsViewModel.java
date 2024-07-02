@@ -16,4 +16,9 @@ public class NotificationsViewModel extends ViewModel {
     public LiveData<String> getText() {
         return mText;
     }
+
+    public void setText(double oxygen) {
+        mText.setValue("Sauerstoffsättigung: " + oxygen + "%");
+
+    }
 }
