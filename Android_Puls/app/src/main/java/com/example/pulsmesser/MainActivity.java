@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.media.MediaPlayer;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +34,10 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
     private ActivityMainBinding binding;
     private MqttHelper mqttHelper;
     private DatabaseManager databaseManager;
+
+    private MediaPlayer mediaPlayer;
+    private Handler heartbeatHandler;
+    private Runnable heartbeatRunnable;
 
     private static final String TAG = "MainActivity"; //Für Fehlererkennung
 
@@ -95,6 +100,22 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
             Log.e(TAG, "MQTT initialisation or connection failed", e);
         }
         startDataAggregation();
+
+        // Initialisiere den MediaPlayer mit der Herzschlag-Sounddatei
+        mediaPlayer = MediaPlayer.create(this, R.raw.puls_herzschlag);
+
+        // Initialisiere den Handler und Runnable für die Herzschlag-Simulation
+        heartbeatHandler = new Handler();
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                playHeartbeat();
+                heartbeatHandler.postDelayed(this, getHeartbeatInterval());
+            }
+        };
+
+        // Starte die Simulation des Herzschlags
+        startHeartbeatSimulation();
     }
 
     public void onMessageReceived(String topic, String message) {
@@ -109,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
                 if (part.trim().startsWith("Puls:")) {
                     String pulseValue = part.split(":")[1].trim().replace("bpm", "").trim();
                     pulse = Double.parseDouble(pulseValue);
+                    restartHeartbeatSimulation();
                     new Handler(Looper.getMainLooper()).postDelayed(this::updateView, 50);
                 } else if (part.trim().startsWith("Sauerstoff:")) {
                     String oxygenValue = part.split(":")[1].trim().replace("%", "").trim();
@@ -200,6 +222,30 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         return super.onOptionsItemSelected(item);
     }
 
+    private void startHeartbeatSimulation() {
+        if (heartbeatHandler != null && heartbeatRunnable != null) {
+            heartbeatHandler.post(heartbeatRunnable);
+        }
+    }
+
+    private void playHeartbeat() {
+        if (mediaPlayer != null) {
+            mediaPlayer.start();
+        }
+    }
+
+    private long getHeartbeatInterval() {
+        // Berechne das Intervall basierend auf dem Pulswert
+        return (long)(60000 / pulse); // Intervall in Millisekunden (60 Sekunden / bpm)
+    }
+
+    private void restartHeartbeatSimulation() {
+        if (heartbeatHandler != null && heartbeatRunnable != null) {
+            heartbeatHandler.removeCallbacks(heartbeatRunnable);
+            heartbeatHandler.post(heartbeatRunnable);
+        }
+    }
+
 
         @Override
     protected void onDestroy() {
@@ -212,6 +258,14 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         }
         if (timer != null) {
             timer.cancel();
+        }
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        if (heartbeatHandler != null) {
+            heartbeatHandler.removeCallbacks(heartbeatRunnable);
+            heartbeatHandler = null;
         }
     }
 }
