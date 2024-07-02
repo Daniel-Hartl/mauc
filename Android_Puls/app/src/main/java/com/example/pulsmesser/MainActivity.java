@@ -1,32 +1,33 @@
 package com.example.pulsmesser;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import com.example.pulsmesser.databinding.ActivityMainBinding;
+import com.example.pulsmesser.ui.home.HomeFragment;
+import com.example.pulsmesser.ui.notifications.NotificationsFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
-
-
-import com.example.pulsmesser.databinding.ActivityMainBinding;
-import com.example.pulsmesser.ui.notifications.NotificationsFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.example.pulsmesser.ui.home.HomeFragment;
-
+import java.util.Timer;
+import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMessageListener {
 
     private ActivityMainBinding binding;
@@ -41,8 +42,9 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
     private Handler handler = new Handler(Looper.getMainLooper());
     private Timer timer;
     private boolean dataUpdated = false;
+    private boolean isSavingEnabled = true;
 
-    private String username = loadUsernameFromConfig();
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+         username = loadUsernameFromConfig();
 
         databaseManager = new DatabaseManager(this);
 
@@ -157,9 +161,11 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
             @Override
             public void run() {
                 if (dataUpdated) {
-                    // Save data to database
-                    databaseManager.insertPulseData(username, pulse, oxygen);
-                    dataUpdated = false; // Reset flag
+                    if (isSavingEnabled) {
+                        // Save data to database
+                        databaseManager.insertPulseData(username, pulse, oxygen);
+                        dataUpdated = false; // Reset flag
+                    }
                 }
             }
         }, 0, 10000); // Run every 10 seconds
@@ -167,7 +173,8 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
 
     private String loadUsernameFromConfig() {
         try {
-            InputStream inputStream = getAssets().open("config.properties");
+            AssetManager assetManager = getAssets();
+            InputStream inputStream = assetManager.open("config.properties");
             Properties properties = new Properties();
             properties.load(inputStream);
             return properties.getProperty("username");
@@ -177,8 +184,24 @@ public class MainActivity extends AppCompatActivity implements MqttHelper.MqttMe
         }
     }
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
     @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_toggle_save) {
+            isSavingEnabled = !item.isChecked();
+            item.setChecked(isSavingEnabled);
+            Toast.makeText(this, isSavingEnabled ? "Speichern aktiviert" : "Speichern deaktiviert", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+        @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mqttHelper != null) {

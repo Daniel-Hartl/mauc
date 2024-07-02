@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -19,17 +21,28 @@ public class DatabaseManager {
     }
 
     public void insertPulseData(String username, double pulse, double oxygen) {
-        ContentValues values = new ContentValues();
-        values.put(PulseEntry.COLUMN_NAME_USERNAME, username);
-        values.put(PulseEntry.COLUMN_NAME_DATE, getCurrentDateTime());
-        values.put(PulseEntry.COLUMN_NAME_PULSE, pulse);
-        values.put(PulseEntry.COLUMN_NAME_OXYGEN, oxygen);
+        if (db != null && db.isOpen()) {
+            ContentValues values = new ContentValues();
+            values.put(PulseEntry.COLUMN_NAME_USERNAME, username);
+            values.put(PulseEntry.COLUMN_NAME_DATE, getCurrentDateTime());
+            values.put(PulseEntry.COLUMN_NAME_PULSE, pulse);
+            values.put(PulseEntry.COLUMN_NAME_OXYGEN, oxygen);
 
-        db.insert(PulseEntry.TABLE_NAME, null, values);
+            long result = db.insert(PulseEntry.TABLE_NAME, null, values);
+            if (result == -1) {
+                Log.e("DatabaseManager", "Failed to insert data");
+            } else {
+                Log.d("DatabaseManager", "Data inserted successfully");
+            }
+        } else {
+            Log.e("DatabaseManager", "Database is closed or null");
+        }
     }
 
     public void close() {
-        dbHelper.close();
+        if (db != null && db.isOpen()) {
+            dbHelper.close();
+        }
     }
 
     private String getCurrentDateTime() {
