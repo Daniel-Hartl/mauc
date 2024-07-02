@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.projektarbeit"
+    namespace = "com.example.puls"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.projektarbeit"
+        applicationId = "com.example.puls"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -29,14 +29,20 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packaging {
+        resources {
+            excludes += listOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
+        }
+    }
 }
 
 dependencies {
 
-
     implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2")
     implementation("org.eclipse.paho:org.eclipse.paho.android.service:1.0.2")
 
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.3")
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.3")
 
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -49,4 +55,3 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
-
