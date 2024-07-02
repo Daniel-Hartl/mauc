@@ -19,6 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Puls"
+rootProject.name = "Projektarbeit"
 include(":app")
- 
