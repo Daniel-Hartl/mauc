@@ -15,6 +15,7 @@
 \usepackage[ngerman]{babel}
 
 \usepackage{parskip}			% Einstellungen fuer Absaetze: Abstand statt Einrueckung
+\usepackage{graphicx}			% Standard Bildeinbindungspaket
 
 \usepackage[a4paper,			% Papierformat A4
 	    left=2.5cm,				% linker Rand
@@ -65,6 +66,7 @@
 \definecolor{battleshipgrey}{rgb}{0.52, 0.52, 0.51}
 \definecolor{cardinal}{rgb}{0.77, 0.12, 0.23}
 
+
 %\usepackage{tikz}								% Erstellen von Grafiken
 %\usetikzlibrary{positioning,arrows,plotmarks} % TikZ-Bibliotheken
 %\usepackage{pgfplots}                           % Darstellung von Plots, Funktionen, Graphen usw.
@@ -84,6 +86,22 @@
 	showstringspaces = false
 }
 %
+
+\lstdefinelanguage{JS}{
+	keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+	keywordstyle=\color{blue}\bfseries,
+	ndkeywords={class, export, boolean, throw, implements, import, this},
+	ndkeywordstyle=\color{blue}\bfseries,
+	identifierstyle=\color{black},
+	sensitive=false,
+	comment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	commentstyle=\color{battleshipgrey}\ttfamily,
+	stringstyle=\color{cardinal}\ttfamily,
+	morestring=[b]',
+	morestring=[b]"
+}
+
 \usepackage[square,numbers,sort]{natbib} % Zitationsstil mit Attribut lastchecked
 %
 %\usepackage[european, siunitx]{circuitikz}	% Darstellung von Schaltungen
@@ -103,7 +121,8 @@
 \newcommand*{\IhreSchluesselwoerter}{Android, ESP32, MQTT, IoT, Pulsoximeter, MAX30100, WLAN}
 \newcommand*{\IhrErstpruefer}{Prof. Dr. Ulrich Schäfer}
 
-\newcommand{\quoteM}[1]{\glqq {1}\grqq{} }
+\newcommand{\quoteM}[1]{\glqq {#1}\grqq{} }
+\renewcommand{\lstlistlistingname}{Quellcodeverzeichnis}
 
 \usepackage[bookmarks, raiselinks, pageanchor, % PDF-Einstellungen
             hyperindex, colorlinks,
@@ -143,31 +162,34 @@
   %
   
   \section{Einleitung}
-  
-  Hier starten Sie mit Ihrer Beschreibung.
-  
-  Bitte passen Sie in der \LaTeX-Datei \texttt{projektarbeit.tex} am Anfang folgende 
-  Zeilen an:
-  
-  Diese Literaturquellen sollten durch passende ersetzt werden: \cite{Breymann:2020,jabref,Schaefer_Spurk:2010,ct_LaTeX:2005,zotero}.
-  
-  Sie können die Dokumentstruktur ändern. Dies ist lediglich ein Vorschlag.
-  
-  Bei \href{https://www.heise.de/download/blog/Einfuehrung-in-LaTeX-3599742}{Heise (dies ist ein link)} finden Sie 
-  eine Zusammenstellung, wie Sie eine \LaTeX-Entwicklungsumgebung installieren, falls Sie nicht
-  \href{https://www.overleaf.com}{Overleaf} benutzen wollen.
+	...
+
 
   %
   % Projektplanung und Vorgehen
   %
   
   \section{Projektplanung und Vorgehen}
-  \subsection{Serielle Kommunikation}
-  \label{serialComunication}
-  Die Serielle kommunikation zwischen dem ESP und dem Laptop findet mit 10Hz statt. Um unnötigen Overhead zu vermeiden findet sie in folgender, minimalistischer Synthax statt:\par
-  \textbf{<Pulsschlag>;<Sauerstoffsättigung>}\par
-  
-  
+  \subsection{Planungsphase}
+	\begin{figure}[tph!]
+	 	\includegraphics[width=\textwidth]{kommunikationsdiagramm}
+	 	\caption{Datenflussdiagramm innerhalb des Projekts}
+	 	\label{fig:datadiagram}
+	\end{figure}
+	Die Planung ging nach dem Prinzip \quoteM{Divide et impera} Teile und herrsche von Statten. Da in dem System so viele separate Komponenten, die bis auf die ein- und ausgehenden Werte autonom voneinander sind. Diesen, bzw. dem Format, in dem diese zwischen den Komponenten übertragen werden ist das Unterkapitel \ref{subsec:internalCommunication} gewidmet.
+  \subsection{Vorgehen}
+	Zur Realisierung haben wir uns an einen inkrementellen Ansatz gehalten. So haben wir zuerst die Datenquelle, die angepasste MAX30100 Bibliothek entwickelt und uns bildhaft in Abbildung \ref{fig:datadiagram} nach rechts vorgearbeitet. So konnte das, in der Entwicklung befindliche System jederzeit mit realen Daten getestet werden und es bestand kein Bedarf an Testdatensätzen o.ä.\par
+	Dieser Entwicklungsansatz wird ebenfalls in der Struktur des Kapitels \ref{sec:implementation} wiedergegeben.
+  \subsection{Kommunikation zwischen Komponenten}
+	\label{subsec:internalCommunication}
+	Die Serielle Kommunikation zwischen dem ESP\_32 und dem Laptop ist mit 10Hz auf 115200 Baud realisiert. Um unnötigen Overhead zu vermeiden findet sie in folgender, minimalistischer Synthax statt:\par
+	\textbf{<Pulsschlag>;<Sauerstoffsättigung>}\par
+	Diese Telegramme werden dann in Node-RED\cite{nodeRED} eine Sekunde bzw. zehn Nachrichten lang gesammelt, nach Parametern aufgedröselt, je ein Durchschnitt gebildet um den Jitter zu verringern und die Graphen zu glätten und dann an den HiveMQ Broker\cite{hiveMQ} zu senden, wo es unter den Topics
+	\begin{itemize}
+		\item \textbf{Herzfrequenz:} afkdcdjkcnks/sensor/heartRate/raw/sensor
+		\item \textbf{Sauerstoffgehalt:} afkdcdjkcnks/sensor/o2/raw/sensor
+	\end{itemize}
+	Abrufbar sind und so für die Android Applikation verfügbar sind.
   
   
   
@@ -176,12 +198,29 @@
   % Implementierung
   %
   
-  Hier sollten Sie auch das Protkoll/Datenformat für die serielle Kommunikation zwischen ESP32 und PC/Laptop sauber dokumentieren.
-  
   \section{Implementierung}
+  \label{sec:implementation}
+  
+  Der ESP\_32\cite{esp32} ist wie in folgender Abbildung gezeigt mit dem MAX30100\cite{max30100breakout} verbunden. 
+  \begin{figure}[tph!]
+  	\begin{center}
+  		\includegraphics[width=0.6\textwidth]{MAX30100 Interfacing ESP32}
+  	\caption{Verkabelung des ESP\_32 mit dem MAX30100\cite{max30100tutorial}}
+  	\label{fig:espSchaltung}
+  	\end{center}
+  \end{figure}
+Diese Konfiguration ist von der Website Electronicwings.com übernommen.
+  \begin{itemize}
+  	\item 3,3V $\longleftrightarrow$ VIN
+  	\item G22 $\longleftrightarrow$ SCL
+  	\item G21 $\longleftrightarrow$ SDA
+  	\item GND $\longleftrightarrow$ GND
+  \end{itemize}
+  
   
   \subsection{Änderungen an der MAX30100 Bibliothek}
-  Zur effizienteren Bedienung des Puls Oximeters wurde das Enumerate \quoteM{BoardType} hinzugefügt, das für den Wert 0 die Konstante ESP\_32 und für den Wert 1 LOLIN\_32 zuordnet.\par
+  Die Basis zum Betreiben des MAX30100 bildet die gleichnamige Bibliothek\cite{max30100bib} von Connor Huffine. Diese wurde zur besseren Erfüllung der speziellen Anforderungen wie folgt angepasst.\par
+  Zur effizienteren Bedienung des Puls Oximeters wurde das Enumerate \quoteM{BoardType} hinzugefügt, das für den Wert 0 die Konstante ESP\_32 und für den Wert 1 LOLIN\_32 zuordnet. Hierbei wird auf den LOLIN\_32\cite{lolin32} speziell Rücksicht genommen, da dieser als kleinere Version eines ESP\_32 weniger Pins aufweist, die dadurch über andere IDs angesteuert werden müssen.\par 
   In der Klasse PulseOximeter selbst wurde die Signatur der Methode begin() um den Parameter \quoteM{board} modifiziert:
   \begin{lstlisting}[language=C++, caption={Signatur der begin() Methode}, captionpos=b]
 bool begin(BoardType board, PulseOximeterDebuggingMode debuggingMode_);
@@ -189,7 +228,7 @@ bool begin(BoardType board, PulseOximeterDebuggingMode debuggingMode_);
   Hierbei sind beide optional und board hat als Standardparameter ESP\_32, was den bisherigen Ablauf anstö\ss t.\par
   Sollte die Methode mit dem Parameterwert 1 oder LOLIN\_32 aufgerufen werden, so werden die Konstanten für den SDA Pin auf 0 und die für den SCL Pin auf 4 gesetzt.
   \subsection{ESP32 Code}
-  Der ESP32 wurde so programmiert, dass er nach CALLBACK\_INTERVAL Millisekunden über die Serielle Schnittstelle mit 115200 Baud, wie in \ref{serialComunication} beschrieben, die Herzfrequenz und den Sauerstoffgehalt des Blutes zur weiteren Verarbeitung an den Laptop überträgt, wo diese dann weiterverarbeitet werden können.
+  Der ESP32 wurde so programmiert, dass er nach CALLBACK\_INTERVAL Millisekunden über die Serielle Schnittstelle mit 115200 Baud, wie in \ref{subsec:internalCommunication} beschrieben, die Herzfrequenz und den Sauerstoffgehalt des Blutes zur weiteren Verarbeitung an den Laptop überträgt, wo diese dann weiterverarbeitet werden können.
   
   \begin{lstlisting}[language=C, caption={Quellcode des ESP32-Programms}, captionpos=b, label=srcEsp]
 #include <Wire.h>
@@ -236,40 +275,82 @@ void loop() {
 	delay(CALLBACK_INTERVAL);
 }
   \end{lstlisting}
+
+  \subsection{Node-RED Datenfluss}
+	Der Node-RED\cite{nodeRED} Datenfluss erfolgt nach der Struktur, dass der Serielle Input eine Sekunde gebuffert wird und gesammelt zur Verarbeitung an die Funktionen zum Extrahieren ihrer jeweiligen Werte übergeben. Deren Output wird dann unter den im Abschnitt \ref{subsec:internalCommunication} spezifizierten Topics auf dem HiveMQ Broker gepublished.
+	\begin{lstlisting}[language=JS, caption={Quellcode der Methode zum Lesen des Sauerstoffgehalts aus dem Buffer}, captionpos=b, label=srcO2]
+var o2 = 0.0;
+var i = 0;
+
+// split the serial protocol of 1 second into seperate messages.
+var words = msg.payload.split("\r\n");
+
+// seperate each message in single values for o2 and heartrate.
+words.forEach(function (item) {
+	if(item.includes(";"))
+	{
+		var values = item.split(";");
+		if(!isNaN(values[1]))
+		{
+			// add all valid o2 values and count them.
+			o2 = parseFloat(o2) + parseFloat(values[1]);
+			i = i + 1;
+		}
+	}
+});
+
+// return the average o2 value in payload.
+return [ {payload: o2 / i}];
+	\end{lstlisting}
 	
+  \subsection{Android Applikation}
+  ...
+  \subsection{Komplexere \LaTeX{} Erweiterungskommandos}
+	\subsubsection{Sprachsupport für JavaScript im listings-Paket}
+	  Um den Quellcode von Listing \ref{srcO2} ansprechend darstellen zu können wurde das von Prof. Dr. Schäfer gestellte \LaTeX{} Template erweitert um Quellcodesupport für JavaScript\cite{texJsInclusion}. Der dafür benötigte Quellcode wurde von Stackexchange übernommen und geringfügig verändert, um dem bestehenden Konzept zu entsprechen.
+	  \begin{lstlisting}[language=tex, caption={\LaTeX{} Quellcode für JavaScript Support im Paket listings}, captionpos=b, label=srcJS]
+\lstdefinelanguage{JS}{
+	keywords={typeof, new, true, false, catch, function, return, null, catch, switch,
+		      var, if, in, while, do, else, case, break},
+	keywordstyle=\color{blue}\bfseries,
+	ndkeywords={class, export, boolean, throw, implements, import, this},
+	ndkeywordstyle=\color{blue}\bfseries,
+	identifierstyle=\color{black},
+	sensitive=false,
+	comment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	commentstyle=\color{battleshipgrey}\ttfamily,
+	stringstyle=\color{cardinal}\ttfamily,
+	morestring=[b]',
+	morestring=[b]"
+}
+  	  \end{lstlisting}
+	  
   %
   % Probleme und Diskussion
   %
   
   \section{Probleme und Diskussion}
-  
-  Sie können die Überschrift natürlich umbenennen, falls es keine Probleme gibt :-).
+	Die grö\ss ten Probleme bei der Implementation traten beim Umsetzen der MQTT Verbindungen auf. Der Zugriff auf ein persönliches HiveMQ Cluster von Node-RED ist selbst nach mehrstündiger Recherche nicht gelungen, weshalb wir probeweise auf den HiveMQ Public MQTT Broker gewechselt sind. Dies funktionierte auf Anhieb ohne Probleme.
   
   %
   % Zusammenfassung und Ausblick
   %
   
   \section{Zusammenfassung und Ausblick}
+	Das Projekt ist als Konzept durchaus brauchbar für medizinische Anwendung. Sollte ein zuverlässigerer Puls und Sauserstoffgehalt Sensor eingebunden werden, der ESP\_32 eigenständig mit dem Broker kommunizieren und mit einem Token oder einer ID ausgestattet werden, könnte man das System komerziell einsetzen.\par
+	So wäre es möglich, dass man über ein affiliate System Arztpraxen die Möglichkeit gibt, ihnen zugeordnete Geräte auszugeben, die der Patient nutzt. Durch diese Zuordnung könnte der Arzt vorbereitend auf eine Sprechstunde oder zur Ferndiagnose die gemessenen Werte online einsehen. \par
+	Diese Idee ist zugegeben Datenschutztechnisch nicht auf Realisierbarkeit geprüft, könnte jedoch die Behandlung von chronischen Krankheiten, deren Symptomatik mit Blutwerten zusammenhängt modernisieren und da diese oft bei älteren, weniger mobilen Menschen auftreten vereinfachen.
   
-  Die Literatur (für den nächsten Abschnitt) tragen Sie in die Datei \texttt{quellen.bib} ein. Diese Datei hat die BiB\TeX-Syntax (vgl. \url{https://ctan.org/pkg/bibtex}; BiB\TeX\ ist bei \href{https://www.heise.de/download/product/texstudio-62955}{\TeX studio} bzw. \href{https://www.overleaf.com}{Overleaf} dabei).
+  \clearpage 
   
-  Zur Literaturverwaltung verwenden Sie am besten Zotero \cite{zotero} oder JabRef \cite{jabref}. 
+  \listoffigures
+  \lstlistoflistings
   
-  Bei meiner \LaTeX-Installation ist der \texttt{natdin}-Style leider etwas buggy (bei \texttt{@book} wird die DOI-URL doppelt generiert, dafür fehlt sie bei \texttt{@inproceedings}). Allerdings funktioniert das
-  Attribut \texttt{lastchecked} für Webseiten (Publikationstyp \texttt{@misc}).
-  
-  \clearpage % - bei Bedarf diesen Seitenumbruch entfernen
-  
-  %
-  % Literatur 
-  %
-
-  \phantomsection
   \addcontentsline{toc}{section}{Literatur}
   \bibliographystyle{natdin}
   \bibliography{quellen}
   
-
 %\include{anhang} % zum Beispiel hier die ChatGPT-Chatprotokolle einbinden (oder als extra-Datei)
 
 \end{document}
