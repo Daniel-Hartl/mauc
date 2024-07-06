@@ -1,6 +1,6 @@
 [
     {
-        "id": "faeff8b338da8c6e",
+        "id": "8b33a75140b4c1c4",
         "type": "tab",
         "label": "ESP Verbindung",
         "disabled": false,
@@ -8,10 +8,10 @@
         "env": []
     },
     {
-        "id": "5ee38c0cdd8feb68",
+        "id": "878269b1931fc16e",
         "type": "debug",
-        "z": "faeff8b338da8c6e",
-        "name": "debug 1",
+        "z": "8b33a75140b4c1c4",
+        "name": "heartrate",
         "active": true,
         "tosidebar": true,
         "console": false,
@@ -20,29 +20,29 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1080,
+        "x": 1020,
         "y": 380,
         "wires": []
     },
     {
-        "id": "a4428fc4b9a7fb79",
+        "id": "b48ceda52d5328e5",
         "type": "serial in",
-        "z": "faeff8b338da8c6e",
+        "z": "8b33a75140b4c1c4",
         "name": "ESP32",
         "serial": "cb8f0664a10d179c",
-        "x": 450,
-        "y": 420,
+        "x": 330,
+        "y": 240,
         "wires": [
             [
-                "9c7eb68bd09b2ce1",
-                "56e9bc0d65ca7f46"
+                "993a68a11668f909",
+                "350cfd9d63315738"
             ]
         ]
     },
     {
-        "id": "9c7eb68bd09b2ce1",
+        "id": "993a68a11668f909",
         "type": "function",
-        "z": "faeff8b338da8c6e",
+        "z": "8b33a75140b4c1c4",
         "name": "heartRate from buffer",
         "func": "var heartRate = 0.0;\nvar i = 0;\n\nvar words = msg.payload.split(\"\\r\\n\");\nwords.forEach(function (item) {\n    if(item.includes(\";\"))\n    {\n        var values = item.split(\";\");\n        if(!isNaN(values[0]))\n        {\n            heartRate = parseFloat(heartRate) + parseFloat(values[0]);\n            i = i + 1;\n        }\n    }\n});\n\nreturn [ {payload: heartRate / i}];",
         "outputs": 1,
@@ -51,11 +51,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 760,
-        "y": 380,
+        "x": 560,
+        "y": 200,
         "wires": [
             [
-                "5ee38c0cdd8feb68"
+                "3d983b677ba5a051"
             ]
         ],
         "inputLabels": [
@@ -66,9 +66,9 @@
         ]
     },
     {
-        "id": "56e9bc0d65ca7f46",
+        "id": "350cfd9d63315738",
         "type": "function",
-        "z": "faeff8b338da8c6e",
+        "z": "8b33a75140b4c1c4",
         "name": "o2 from buffer",
         "func": "var o2 = 0.0;\nvar i = 0;\n\nvar words = msg.payload.split(\"\\r\\n\");\nwords.forEach(function (item) {\n    if(item.includes(\";\"))\n    {\n        var values = item.split(\";\");\n        if(!isNaN(values[1]))\n        {\n            o2 = parseFloat(o2) + parseFloat(values[1]);\n            i = i + 1;\n        }\n    }\n});\n\nreturn [ {payload: o2 / i}];",
         "outputs": 1,
@@ -77,18 +77,18 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 740,
-        "y": 480,
+        "x": 540,
+        "y": 280,
         "wires": [
             [
-                "27a27dc0777dd01a"
+                "dd268ddfed75aeb0"
             ]
         ]
     },
     {
-        "id": "27a27dc0777dd01a",
+        "id": "48217d26abfc5f1d",
         "type": "debug",
-        "z": "faeff8b338da8c6e",
+        "z": "8b33a75140b4c1c4",
         "name": "debug 2",
         "active": true,
         "tosidebar": true,
@@ -98,8 +98,118 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1080,
-        "y": 480,
+        "x": 720,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "9bca16f647a725ad",
+        "type": "mqtt in",
+        "z": "8b33a75140b4c1c4",
+        "name": "",
+        "topic": "afkdcdjkcnks/sensor/heartRate/raw/sensor",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "8f89c04dd76d75b8",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 680,
+        "y": 380,
+        "wires": [
+            [
+                "878269b1931fc16e"
+            ]
+        ]
+    },
+    {
+        "id": "3d983b677ba5a051",
+        "type": "mqtt out",
+        "z": "8b33a75140b4c1c4",
+        "name": "heartrate MQTT",
+        "topic": "afkdcdjkcnks/sensor/heartRate/raw/sensor",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "8f89c04dd76d75b8",
+        "x": 960,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "ddea86ab0ffe1c7f",
+        "type": "catch",
+        "z": "8b33a75140b4c1c4",
+        "name": "",
+        "scope": null,
+        "uncaught": false,
+        "x": 340,
+        "y": 540,
+        "wires": [
+            [
+                "48217d26abfc5f1d"
+            ]
+        ]
+    },
+    {
+        "id": "dd268ddfed75aeb0",
+        "type": "mqtt out",
+        "z": "8b33a75140b4c1c4",
+        "name": "o2 MQTT",
+        "topic": "afkdcdjkcnks/sensor/o2/raw/sensor",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "8f89c04dd76d75b8",
+        "x": 940,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "48ecde213ad546ab",
+        "type": "mqtt in",
+        "z": "8b33a75140b4c1c4",
+        "name": "",
+        "topic": "afkdcdjkcnks/sensor/o2/raw/sensor",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "8f89c04dd76d75b8",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 460,
+        "wires": [
+            [
+                "0e1be5abaea0583c"
+            ]
+        ]
+    },
+    {
+        "id": "0e1be5abaea0583c",
+        "type": "debug",
+        "z": "8b33a75140b4c1c4",
+        "name": "o2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 460,
         "wires": []
     },
     {
@@ -121,5 +231,36 @@
         "out": "time",
         "addchar": "",
         "responsetimeout": ""
+    },
+    {
+        "id": "8f89c04dd76d75b8",
+        "type": "mqtt-broker",
+        "name": "hive",
+        "broker": "broker.hivemq.com",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     }
 ]
