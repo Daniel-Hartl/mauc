@@ -162,7 +162,7 @@
   %
   
   \section{Einleitung}
-	Das Ziel des Projekts ist es, mittels des optische Herzfrequenzmess- und Pulsoximetriesensormoduls MAX30100\cite{max30100breakout} ein Puls- und Pulsoximetriemessgerät zu realisieren, welches über eine Broker Anbindung fähig ist Daten an eine Android Applikation zu übertragen.
+	Das Ziel des Projekts ist es, mittels des optische Herzfrequenzmess- und Pulsoximetriesensormoduls MAX30100\cite{max30100breakout} ein Puls- und Pulsoximetriemessgerät zu realisieren, welches über eine MQTT Broker Anbindung fähig ist Daten an eine Android Applikation zu übertragen.
 
 
   %
@@ -320,7 +320,7 @@ void loop() {
 	      	\caption{Node-RED Dashboard}
 	      	\label{fig:nodeRedDashboard}
       	\end{center}
-      \end{figure}
+      \end{figure}\newpage
 	\subsubsection*{MQTT Publishing}
   	  Im Anschluss daran werden die sogenannten Messages mit einem Topic, was dem in der Android App definierten Enumerate \quoteM{selectedView} entspricht.
 	  \begin{lstlisting}[language=Java, caption={Quellcode des Enumerates \quoteM{selectedView} zur Auswahl der zu übertragenden Werte}, captionpos=b, label=srcSelectedView]
