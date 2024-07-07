@@ -121,7 +121,7 @@
 \newcommand*{\IhreSchluesselwoerter}{Android, ESP32, MQTT, IoT, Pulsoximeter, MAX30100, WLAN}
 \newcommand*{\IhrErstpruefer}{Prof. Dr. Ulrich Schäfer}
 
-\newcommand{\quoteM}[1]{\glqq {#1}\grqq{} }
+\newcommand{\quoteM}[1]{\glqq {#1}\grqq{}}
 \renewcommand{\lstlistlistingname}{Quellcodeverzeichnis}
 
 \usepackage[bookmarks, raiselinks, pageanchor, % PDF-Einstellungen
@@ -162,7 +162,7 @@
   %
   
   \section{Einleitung}
-	...
+	Das Ziel des Projekts ist es, mittels des optische Herzfrequenzmess- und Pulsoximetriesensormoduls MAX30100\cite{max30100breakout} ein Puls- und Pulsoximetriemessgerät zu realisieren, welches über eine Broker Anbindung fähig ist Daten an eine Android Applikation zu übertragen.
 
 
   %
@@ -176,7 +176,8 @@
 	 	\caption{Datenflussdiagramm innerhalb des Projekts}
 	 	\label{fig:datadiagram}
 	\end{figure}
-	Die Planung ging nach dem Prinzip \quoteM{Divide et impera} Teile und herrsche von Statten. Da in dem System so viele separate Komponenten, die bis auf die ein- und ausgehenden Werte autonom voneinander sind. Diesen, bzw. dem Format, in dem diese zwischen den Komponenten übertragen werden ist das Unterkapitel \ref{subsec:internalCommunication} gewidmet.
+	Die Planung ging nach dem Prinzip \quoteM{Divide et impera} Teile und herrsche von Statten. Da in dem System so viele separate Komponenten, die bis auf die ein- und ausgehenden Werte autonom voneinander sind. Diesen, bzw. dem Format, in dem diese zwischen den Komponenten übertragen werden ist das Unterkapitel \ref{subsec:internalCommunication} gewidmet.\par
+	Die Arbeitsaufteilung wurde derartig vorgenommen, dass Herr Grosch die Android Applikation, was wir als das umfangreichste Subsystem realisiert haben und Herr Hartl die zwei kleineren Subsysteme und die \LaTeX{} Dokumentation erstellt, da er bereits versiert mit \LaTeX{} ist.
   \subsection{Vorgehen}
 	Zur Realisierung haben wir uns an einen inkrementellen Ansatz gehalten. So haben wir zuerst die Datenquelle, die angepasste MAX30100 Bibliothek entwickelt und uns bildhaft in Abbildung \ref{fig:datadiagram} nach rechts vorgearbeitet. So konnte das, in der Entwicklung befindliche System jederzeit mit realen Daten getestet werden und es bestand kein Bedarf an Testdatensätzen o.ä.\par
 	Dieser Entwicklungsansatz wird ebenfalls in der Struktur des Kapitels \ref{sec:implementation} wiedergegeben.
@@ -184,12 +185,8 @@
 	\label{subsec:internalCommunication}
 	Die Serielle Kommunikation zwischen dem ESP\_32 und dem Laptop ist mit 10Hz auf 115200 Baud realisiert. Um unnötigen Overhead zu vermeiden findet sie in folgender, minimalistischer Synthax statt:\par
 	\textbf{<Pulsschlag>;<Sauerstoffsättigung>}\par
-	Diese Telegramme werden dann in Node-RED\cite{nodeRED} eine Sekunde bzw. zehn Nachrichten lang gesammelt, nach Parametern aufgedröselt, je ein Durchschnitt gebildet um den Jitter zu verringern und die Graphen zu glätten und dann an den HiveMQ Broker\cite{hiveMQ} zu senden, wo es unter den Topics
-	\begin{itemize}
-		\item \textbf{Herzfrequenz:} afkdcdjkcnks/sensor/heartRate/raw/sensor
-		\item \textbf{Sauerstoffgehalt:} afkdcdjkcnks/sensor/o2/raw/sensor
-	\end{itemize}
-	Abrufbar sind und so für die Android Applikation verfügbar sind.
+	Diese Telegramme werden dann in Node-RED\cite{nodeRED} eine Sekunde bzw. zehn Nachrichten lang gesammelt, nach Parametern aufgedröselt, je ein Durchschnitt gebildet um den Jitter zu verringern und die Graphen zu glätten und dann an den HiveMQ Broker\cite{hiveMQ} zu senden, wo es unter dem Topic \textbf{afkdcdjkcnks/sensor/data/raw/sensor} für die Sensordaten der App zugänglich gemacht werden.\par
+	Andersherum published die Android Applikation unter dem Topic \textbf{afkdcdjkcnks/sensor/ctrl/raw/sensor} die zuletzt ausgewählte View, nach der die Node-RED Logik die zu publishenden Daten auswählt.
   
   
   
@@ -205,8 +202,8 @@
   \begin{figure}[tph!]
   	\begin{center}
   		\includegraphics[width=0.6\textwidth]{MAX30100 Interfacing ESP32}
-  	\caption{Verkabelung des ESP\_32 mit dem MAX30100\cite{max30100tutorial}}
-  	\label{fig:espSchaltung}
+	  	\caption{Verkabelung des ESP\_32 mit dem MAX30100\cite{max30100tutorial}}
+	  	\label{fig:espSchaltung}
   	\end{center}
   \end{figure}
 Diese Konfiguration ist von der Website Electronicwings.com übernommen.
@@ -219,6 +216,12 @@ Diese Konfiguration ist von der Website Electronicwings.com übernommen.
   
   
   \subsection{Änderungen an der MAX30100 Bibliothek}
+  \quoteM{[Der] MAX30100 ist ein optisches Herzfrequenzmess- und Pulsoximetriesensormodul. Es
+  integriert zwei LEDs (IR und Rot), einen Photodetektor (Rot), eine optimierte Optik
+  und eine rauscharme analoge Signalverarbeitung zur Erkennung von Pulsoximetrie-
+  und Herzfrequenzsignalen. Das Signal wird von einer rauscharmen analogen
+  Signalverarbeitungseinheit verarbeitet und über die I2C-Schnittstelle an die
+  Ziel-MCU weitergeleitet.}\cite{max30100breakout}\par
   Die Basis zum Betreiben des MAX30100 bildet die gleichnamige Bibliothek\cite{max30100bib} von Connor Huffine. Diese wurde zur besseren Erfüllung der speziellen Anforderungen wie folgt angepasst.\par
   Zur effizienteren Bedienung des Puls Oximeters wurde das Enumerate \quoteM{BoardType} hinzugefügt, das für den Wert 0 die Konstante ESP\_32 und für den Wert 1 LOLIN\_32 zuordnet. Hierbei wird auf den LOLIN\_32\cite{lolin32} speziell Rücksicht genommen, da dieser als kleinere Version eines ESP\_32 weniger Pins aufweist, die dadurch über andere IDs angesteuert werden müssen.\par 
   In der Klasse PulseOximeter selbst wurde die Signatur der Methode begin() um den Parameter \quoteM{board} modifiziert:
@@ -277,32 +280,60 @@ void loop() {
   \end{lstlisting}
 
   \subsection{Node-RED Datenfluss}
-	Der Node-RED\cite{nodeRED} Datenfluss erfolgt nach der Struktur, dass der Serielle Input eine Sekunde gebuffert wird und gesammelt zur Verarbeitung an die Funktionen zum Extrahieren ihrer jeweiligen Werte übergeben. Deren Output wird dann unter den im Abschnitt \ref{subsec:internalCommunication} spezifizierten Topics auf dem HiveMQ Broker gepublished.
-	\begin{lstlisting}[language=JS, caption={Quellcode der Methode zum Lesen des Sauerstoffgehalts aus dem Buffer}, captionpos=b, label=srcO2]
-var o2 = 0.0;
-var i = 0;
-
-// split the serial protocol of 1 second into seperate messages.
-var words = msg.payload.split("\r\n");
-
-// seperate each message in single values for o2 and heartrate.
-words.forEach(function (item) {
-	if(item.includes(";"))
-	{
-		var values = item.split(";");
-		if(!isNaN(values[1]))
-		{
-			// add all valid o2 values and count them.
-			o2 = parseFloat(o2) + parseFloat(values[1]);
-			i = i + 1;
-		}
-	}
-});
-
-// return the average o2 value in payload.
-return [ {payload: o2 / i}];
-	\end{lstlisting}
+  \begin{figure}[tph!]
+  	\includegraphics[width=\textwidth]{node red flow}
+  	\caption{Node-RED\cite{nodeRED} Datenfluss Darstellung}
+  	\label{fig:nodeRedFlow}
+  \end{figure}
+	\subsubsection*{Serielle Schnittstelle}
+	  Die serielle Schnittstelle ist so konfiguriert, dass sie mit einer Baudrate 115200 für 1000ms die Übertragung buffert und diese dann weitergibt. Dies geschieht im Knoten \quoteM{ESP32}.
+	\subsubsection*{Verarbeitung des seriellen Inputs}
+	  In den Knoten \quoteM{heartRate from buffer} und \quoteM{o2 from buffer} wird der serielle Mitschnitt jeweils aufgebrochen, die gesuchten Werte separiert und der Durchschnitt gebildet, um den Graph etwas zu glätten.
+	  \begin{lstlisting}[language=JS, caption={Quellcode der Methode \quoteM{o2 from buffer} zum Lesen des Sauerstoffgehalts aus dem Buffer}, captionpos=b, label=srcO2]
+	var o2 = 0.0;
+	var i = 0;
 	
+	// split the serial protocol of 1 second into seperate messages.
+	var words = msg.payload.split("\r\n");
+	
+	// seperate each message in single values for o2 and heartrate.
+	words.forEach(function (item) {
+		if(item.includes(";"))
+		{
+			var values = item.split(";");
+			if(!isNaN(values[1]))
+			{
+				// add all valid o2 values and count them.
+				o2 = parseFloat(o2) + parseFloat(values[1]);
+				i = i + 1;
+			}
+		}
+	});
+	
+	// return the average o2 value in payload.
+	return [ {payload: o2 / i, topic: 2}];
+	  \end{lstlisting}	
+      Die Ausgabe dieser Methoden wird dann im Node-RED internen Dashboard als Absolutwerte und in Form eines Graphen für die Herzfrequenz visualisiert (Siehe Abbildung \ref{fig:nodeRedDashboard}). Das Graphen-Objekt wird im Datenfluss weitergegeben, um in der Android App weiterverwendet werden zu können.
+      \begin{figure}[tph!]
+      	\begin{center}
+      		\includegraphics[width=0.6\textwidth]{node red dashboard}
+	      	\caption{Node-RED Dashboard}
+	      	\label{fig:nodeRedDashboard}
+      	\end{center}
+      \end{figure}
+	\subsubsection*{MQTT Publishing}
+  	  Im Anschluss daran werden die sogenannten Messages mit einem Topic, was dem in der Android App definierten Enumerate \quoteM{selectedView} entspricht.
+	  \begin{lstlisting}[language=Java, caption={Quellcode des Enumerates \quoteM{selectedView} zur Auswahl der zu übertragenden Werte}, captionpos=b, label=srcSelectedView]
+enum selectedView
+{
+	heartRate = 0,
+	graph = 1,
+	o2 = 2
+}
+	  \end{lstlisting}
+      In dem switch-Knoten \quoteM{publishBlock} werden dann nur die Messages, deren Topic Attribut der ID der ausgewählten Ansicht entsprechen, an den MQTT Publish Knoten weitergegeben. Dieser published dann die Werte an das Topic \quoteM{afkdcdjkcnks/sensor/data/raw/sensor}.
+    \subsubsection*{Moduseinstellung}
+      Der Knoten \quoteM{Control Subscription} abonniert das Topic \quoteM{afkdcdjkcnks/sensor/ctrl/raw/sensor}. Auf dieses published die Android Applikation die ID der ausgewählten Ansicht (Siehe Listing \ref{srcSelectedView}). Mit einem Abtastintervall von einer Sekunde wird der aktuelle Wert überprüft und im flow Context \quoteM{mode} gespeichert, auf welches dann der \quoteM{publish block Knoten} zugreift.	
   \subsection{Android Applikation}
   ...
   \subsection{Komplexere \LaTeX{} Erweiterungskommandos}
@@ -338,7 +369,7 @@ return [ {payload: o2 / i}];
   %
   
   \section{Zusammenfassung und Ausblick}
-	Das Projekt ist als Konzept durchaus brauchbar für medizinische Anwendung. Sollte ein zuverlässigerer Puls und Sauserstoffgehalt Sensor eingebunden werden, der ESP\_32 eigenständig mit dem Broker kommunizieren und mit einem Token oder einer ID ausgestattet werden, könnte man das System komerziell einsetzen.\par
+	Das Projekt ist als Konzept durchaus brauchbar für medizinische Anwendung. Man müsste nur die Alle Daten kontinuierlich zur Verfügung stellen. Sollte ein zuverlässigerer Puls und Sauserstoffgehalt Sensor eingebunden werden, der ESP\_32 eigenständig mit dem Broker kommunizieren und mit einem Token oder einer ID ausgestattet werden, könnte man das System komerziell einsetzen.\par
 	So wäre es möglich, dass man über ein affiliate System Arztpraxen die Möglichkeit gibt, ihnen zugeordnete Geräte auszugeben, die der Patient nutzt. Durch diese Zuordnung könnte der Arzt vorbereitend auf eine Sprechstunde oder zur Ferndiagnose die gemessenen Werte online einsehen. \par
 	Diese Idee ist zugegeben Datenschutztechnisch nicht auf Realisierbarkeit geprüft, könnte jedoch die Behandlung von chronischen Krankheiten, deren Symptomatik mit Blutwerten zusammenhängt modernisieren und da diese oft bei älteren, weniger mobilen Menschen auftreten vereinfachen.
   
