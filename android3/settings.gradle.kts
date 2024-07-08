@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
@@ -9,18 +10,18 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
     repositories {
-        maven { url = uri("https://jitpack.io")}
-        maven { url = uri("https://repo.eclipse.org/content/repositories/paho-releases/")}
         google()
         mavenCentral()
     }
 }
 
-rootProject.name = "PulsMesser"
+rootProject.name = "android3"
 include(":app")
  
