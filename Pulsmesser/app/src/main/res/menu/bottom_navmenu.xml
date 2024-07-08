@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Puls"
+        android:id="@+id/pulseMenuItem"
+        android:icon="@drawable/pulse"/>
+    <item android:title="Graph"
+        android:id="@+id/graphMenuItem"
+        android:icon="@drawable/graph"/>
+    <item android:title="Sauerstoffgehalt"
+        android:id="@+id/o2menuItem"
+        android:icon="@drawable/o2"/>
+</menu>
