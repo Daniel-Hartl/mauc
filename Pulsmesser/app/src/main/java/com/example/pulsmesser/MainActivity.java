@@ -60,19 +60,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        MqttModule.connect(configReader.getUrl(), configReader.getPort());
+        MqttModule.connect(configReader.getUrl(), configReader.getPort(), configReader.getTopicSend(), configReader.getTopicRecieve(), configReader.getUsername());
         MqttModule.subscribeData();
         MqttModule.publishCtrlMessage(SelectedView.heartRate);
 
-        audioPlayer  =new AudioPlayer(this);
+        //audioPlayer  =new AudioPlayer(this);
     }
 
     private void replaceFragment(Fragment fragment){
         if (currentFragment instanceof ISubscribe && currentFragment != null)
             ((ISubscribe)currentFragment).unsubscribe();
-        if(fragment instanceof PulseFragment)
-            ((PulseFragment)fragment).setAudioPlayer(this.audioPlayer);
-
+        //if(fragment instanceof PulseFragment)
+            //((PulseFragment)fragment).setAudioPlayer(this.audioPlayer);
         FragmentManager mng = getSupportFragmentManager();
         FragmentTransaction transaction = mng.beginTransaction();
         transaction.add(R.id.contentContainer, fragment);

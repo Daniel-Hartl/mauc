@@ -108,6 +108,7 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     @Override
     public void saveBuffer() {
+        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null || databaseManager == null)return;
         float total=0;
         for(int i=0; i<elementsInBuffer; i++){
             total += Buffer[i];
