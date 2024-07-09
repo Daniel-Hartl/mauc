@@ -13,6 +13,9 @@
 \usepackage[T1]{fontenc}		% Einstellungen fuer Umlaute usw.
 \usepackage[utf8x]{inputenc}
 \usepackage[ngerman]{babel}
+\usepackage{tabularx}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{3}
 
 \usepackage{parskip}			% Einstellungen fuer Absaetze: Abstand statt Einrueckung
 \usepackage{graphicx}			% Standard Bildeinbindungspaket
@@ -172,7 +175,7 @@
   \section{Projektplanung und Vorgehen}
   \subsection{Planungsphase}
 	\begin{figure}[tph!]
-	 	\includegraphics[width=\textwidth]{kommunikationsdiagramm}
+	 	\includegraphics[width=0.9\textwidth]{kommunikationsdiagramm}
 	 	\caption{Datenflussdiagramm innerhalb des Projekts}
 	 	\label{fig:datadiagram}
 	\end{figure}
@@ -201,7 +204,7 @@
   Der ESP\_32\cite{esp32} ist wie in folgender Abbildung gezeigt mit dem MAX30100\cite{max30100breakout} verbunden. 
   \begin{figure}[tph!]
   	\begin{center}
-  		\includegraphics[width=0.6\textwidth]{MAX30100 Interfacing ESP32}
+  		\includegraphics[width=0.5\textwidth]{MAX30100 Interfacing ESP32}
 	  	\caption{Verkabelung des ESP\_32 mit dem MAX30100\cite{max30100tutorial}}
 	  	\label{fig:espSchaltung}
   	\end{center}
@@ -228,8 +231,7 @@ Diese Konfiguration ist von der Website Electronicwings.com übernommen.
   \begin{lstlisting}[language=C++, caption={Signatur der begin() Methode}, captionpos=b]
 bool begin(BoardType board, PulseOximeterDebuggingMode debuggingMode_);
   \end{lstlisting}
-  Hierbei sind beide optional und board hat als Standardparameter ESP\_32, was den bisherigen Ablauf anstö\ss t.\par
-  Sollte die Methode mit dem Parameterwert 1 oder LOLIN\_32 aufgerufen werden, so werden die Konstanten für den SDA Pin auf 0 und die für den SCL Pin auf 4 gesetzt.
+  Hierbei sind beide optional und board hat als Standardparameter ESP\_32, was den bisherigen Ablauf anstö\ss t.kesh Sollte die Methode mit dem Parameterwert 1 oder LOLIN\_32 aufgerufen werden, so werden die Konstanten für den SDA Pin auf 0 und die für den SCL Pin auf 4 gesetzt.
   \subsection{ESP32 Code}
   Der ESP32 wurde so programmiert, dass er nach CALLBACK\_INTERVAL Millisekunden über die Serielle Schnittstelle mit 115200 Baud, wie in \ref{subsec:internalCommunication} beschrieben, die Herzfrequenz und den Sauerstoffgehalt des Blutes zur weiteren Verarbeitung an den Laptop überträgt, wo diese dann weiterverarbeitet werden können.
   
@@ -281,7 +283,7 @@ void loop() {
 
   \subsection{Node-RED Datenfluss}
   \begin{figure}[tph!]
-  	\includegraphics[width=\textwidth]{node red flow}
+  	\includegraphics[width=0.9\textwidth]{node red flow}
   	\caption{Node-RED\cite{nodeRED} Datenfluss Darstellung}
   	\label{fig:nodeRedFlow}
   \end{figure}
@@ -316,7 +318,7 @@ void loop() {
       Die Ausgabe dieser Methoden wird dann im Node-RED internen Dashboard als Absolutwerte und in Form eines Graphen für die Herzfrequenz visualisiert (Siehe Abbildung \ref{fig:nodeRedDashboard}). Das Graphen-Objekt wird im Datenfluss weitergegeben, um in der Android App weiterverwendet werden zu können.
       \begin{figure}[tph!]
       	\begin{center}
-      		\includegraphics[width=0.6\textwidth]{node red dashboard}
+      		\includegraphics[width=0.5\textwidth]{node red dashboard}
 	      	\caption{Node-RED Dashboard}
 	      	\label{fig:nodeRedDashboard}
       	\end{center}
@@ -324,20 +326,78 @@ void loop() {
 	\subsubsection*{MQTT Publishing}
   	  Im Anschluss daran werden die sogenannten Messages mit einem Topic, was dem in der Android App definierten Enumerate \quoteM{selectedView} entspricht.
 	  \begin{lstlisting}[language=Java, caption={Quellcode des Enumerates \quoteM{selectedView} zur Auswahl der zu übertragenden Werte}, captionpos=b, label=srcSelectedView]
-enum selectedView
+enum SelectedView
 {
-	heartRate = 0,
-	graph = 1,
-	o2 = 2
+	heartRate,
+	graph,
+	o2
 }
 	  \end{lstlisting}
       In dem switch-Knoten \quoteM{publishBlock} werden dann nur die Messages, deren Topic Attribut der ID der ausgewählten Ansicht entsprechen, an den MQTT Publish Knoten weitergegeben. Dieser published dann die Werte an das Topic \quoteM{afkdcdjkcnks/sensor/data/raw/sensor}.
     \subsubsection*{Moduseinstellung}
       Der Knoten \quoteM{Control Subscription} abonniert das Topic \quoteM{afkdcdjkcnks/sensor/ctrl/raw/sensor}. Auf dieses published die Android Applikation die ID der ausgewählten Ansicht (Siehe Listing \ref{srcSelectedView}). Mit einem Abtastintervall von einer Sekunde wird der aktuelle Wert überprüft und im flow Context \quoteM{mode} gespeichert, auf welches dann der \quoteM{publish block Knoten} zugreift.	
   \subsection{Android Applikation}
-  ...
-  \subsection{Komplexere \LaTeX{} Erweiterungskommandos}
-	\subsubsection{Sprachsupport für JavaScript im listings-Paket}
+  	  Die Android Applikation unterstützt Android Oreo oder höher. lässt sich im wesentlichen in drei Teile unterteilen. Das Frontend, das MQTT Modul und das Konfigurations-Lademodul.
+  	  
+  	  
+  	  
+  	  \subsubsection{Frontend}
+  	  
+  	  
+  	  
+  	  
+  \subsubsection{MQTT Schnittstelle}
+   Die MQTT Schnittstelle besteht aus zwei Bereichen. Zuerst dem eigentlichen Client, der in Kapitel \ref{par:mqtt} näher beschrieben wird und dann dem Interface, welches zur Weitergabe der Nachrichten in der Applikation dient und in Kapitel \ref{par:isubscribe} erläutert ist.
+   
+   \paragraph{ISubscribe}~\\
+   \label{par:isubscribe}
+   Das MQTT Modul wurde mit der Paho Bibliothek der Eclipse Foundation\cite{paho_client} realisiert. Es ist eine statische Klasse, die nach Aufbau einer Verbindung zu einem MQTT-Broker bis zu drei Abonnenten vom Typ \quoteM{ISubscribe}.
+   \begin{lstlisting}[language=Java, caption={Quellcode des Interfaces ISubscribe}, captionpos=b, label=srcISubscribe]
+ 	    	public interface ISubscribe {
+ 	    		void onMessageReceived(String message);
+ 	    		void unsubscribe();
+ 	    	}
+   \end{lstlisting}
+   Von diesen wird dann, sobald ein neuer Wert am Broker eingetroffen ist die Methode \quoteM{onMessageReceived} aufgerufen, mit dem Wert als Parameter. So werden die Daten automatisch in die Frontend Fragments geladen, sofern diese korrekt initialisiert sind.\par
+   Die Methode \quoteM{unsubscribe} ist dazu da, explizit das Abonnement zu beenden und den Platz für ein anderes Fragment freizumachen. Sie wird in der Klasse \textbf{MainActivity} beim ändern des Tabs automatisch aufgerufen.
+  	\paragraph{MqttModule}~\\
+  	\label{par:mqtt}
+		Die eigentliche MQTT Modulklasse hat folgende Methoden:\par
+		\begin{figure}[tph!]
+			\begin{tabularx}{\textwidth}{l l X}
+				\textbf{Name} & \textbf{Parameter} & \textbf{Beschreibung}\\\hline
+				\textbf{init} & String, String, & Füllt die Topic Attribute und den\\
+				&  String & genutzten Klientnamen.\\\hline
+				\textbf{isInit}&& Prüft ob alle in init gesetzten Parameter nicht leer sind.\\\hline
+				\textbf{connect} & String, int & Baut eine TCP-Verbindung zum Broker auf mit URL und Port als Parameter.\\\hline
+				\textbf{connect} & String, int, String, & Ruft init und connect auf.\\
+				&  String, String &\\\hline
+				\textbf{disconnect} && Baut die TCP-Verbindung zum Broker ab.\\\hline
+				\textbf{publishCtrlMessage} & SelectedView & Published den Parameter als Integer an\\
+				& (Listing \ref{srcSelectedView}) & den Broker.\\\hline
+				\textbf{subscribeData} && Abonniert das angegebene DataTopic und setzt die Callbackmethode, dass in allen registrierten ISubscribe Objekten die onMessageReceived Methode aufgerufen wird.\\ \hline
+				\textbf{addSubscription} & ISubscribe & Fügt Parameter zu Abonnenten hinzu, sofern ein Platz frei ist.\\\hline
+				\textbf{removeSubscription} & ISubscribe & Entfernt Parameter aus Abonnenten, sofern er einer ist.\\
+			\end{tabularx}
+			\caption{Methoden der Klasse MqttModule}
+		\end{figure}  		
+  		Sie wird genutzt, indem beim Start der Anwendung der Client mit dem Broker verbunden wird und das Topic abonniert. Wenn sich das angezeigte Fragment ändert, wird dieses als Abonnent hinzugefügt, während das letzte entfernt wird. Zudem wird bei einem Wechsel ein Publish mit der neuen, ausgewählten View vollzogen.
+  	  
+  		
+  		
+  		
+  		
+  \subsection{\LaTeX{} Template Erweiterungen}
+    \textbf{Erweitern der Inhaltsverzeichnistiefe}\\[0.3cm]
+      Zur übersichtlicheren Aufschlüsselung wurde ein weiteres Level an Überschriften benötigt. Hierzu erweiterten wir unsere Dokumentenkonfiguration um folgenden Absatz, den wir von Stackexchange\cite{texTocDepth} übernahmen.
+      \begin{lstlisting}[language=tex, caption={\LaTeX{} Quellcode zum Anzeigen einer vierten Inhaltsverzeichnisebene}, captionpos=b, label=srcTocDepth]
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+\newcommand\simpleparagraph[1]{%
+	\stepcounter{paragraph}\paragraph*{\theparagraph\quad{}#1}}
+	 \end{lstlisting}
+   	
+	\textbf{Sprachsupport für JavaScript im listings-Paket}\\[0.3cm]
 	  Um den Quellcode von Listing \ref{srcO2} ansprechend darstellen zu können wurde das von Prof. Dr. Schäfer gestellte \LaTeX{} Template erweitert um Quellcodesupport für JavaScript\cite{texJsInclusion}. Der dafür benötigte Quellcode wurde von Stackexchange übernommen und geringfügig verändert, um dem bestehenden Konzept zu entsprechen.
 	  \begin{lstlisting}[language=tex, caption={\LaTeX{} Quellcode für JavaScript Support im Paket listings}, captionpos=b, label=srcJS]
 \lstdefinelanguage{JS}{
