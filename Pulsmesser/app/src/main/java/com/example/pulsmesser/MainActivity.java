@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isSavingEnabled = true;
     private boolean isSoundEnabled = true;
 
-    private AudioPlayer audioPlayer;
     private boolean isAudioPlaying = false;
 
     private ConfigReader configReader;
