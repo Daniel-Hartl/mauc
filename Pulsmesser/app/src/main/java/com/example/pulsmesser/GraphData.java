@@ -3,6 +3,10 @@ package com.example.pulsmesser;
 public class GraphData {
     public Coordinate[] data;
 
+    /**
+     * recieves the raw data from MQTT and refines it into an array of coordinates
+     * @param coords
+     */
     public GraphData(String[] coords){
         data = new Coordinate[coords.length];
         for(int i = 0; i < coords.length; i++){

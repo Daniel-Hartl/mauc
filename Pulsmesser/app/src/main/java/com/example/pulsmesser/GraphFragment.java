@@ -36,12 +36,10 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
     private LineChart lineChart;
     View root;
 
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -61,7 +59,6 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
      * @param param2 Parameter 2.
      * @return A new instance of fragment GraphFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static GraphFragment newInstance(String param1, String param2) {
         GraphFragment fragment = new GraphFragment();
         Bundle args = new Bundle();
@@ -111,13 +108,16 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
         saveBuffer();
     }
 
+    /**
+     * Starts the Graph with Format "HH:mm:ss"
+     */
     private void setupLineChart() {
         lineChart.getDescription().setEnabled(false);
         XAxis xAxis = lineChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
         xAxis.setValueFormatter(new ValueFormatter() {
-            private final SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            private final SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
             @Override
             public String getFormattedValue(float value) {
@@ -126,6 +126,10 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
         });
     }
 
+    /**
+     * Adds new data into Graph to expand it by one point
+     * @param data
+     */
     private void loadDataIntoChart(Coordinate[] data) {
         List<Entry> entries = new ArrayList<>();
 

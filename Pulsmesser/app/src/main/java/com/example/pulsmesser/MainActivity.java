@@ -75,7 +75,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * Changes the view based on the selected fragment
+     * @param fragment
+     */
     private void replaceFragment(Fragment fragment){
         if (!MqttModule.getConnected())
             MqttModule.connect(configReader.getUrl(), configReader.getPort(),

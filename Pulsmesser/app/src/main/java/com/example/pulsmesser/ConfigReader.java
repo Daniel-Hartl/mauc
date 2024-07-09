@@ -17,6 +17,10 @@ public class ConfigReader {
     private String topic;
     private String topicRecieve;
 
+    /**
+     * Loads info from config.properties for later use
+     * @param context
+     */
     public void loadConfig(Context context) {
         try {
             AssetManager assetManager = context.getAssets();

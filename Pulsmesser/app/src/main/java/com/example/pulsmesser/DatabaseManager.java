@@ -18,6 +18,10 @@ public class DatabaseManager {
     private SQLiteDatabase db;
     private boolean isSavingEnabled = true;
 
+    /**
+     * Creates a new DatabaseManager for the context
+     * @param context
+     */
     public DatabaseManager(Context context) {
         configReader = new ConfigReader();
         dbHelper = new PulseDatabaseHelper(context);
@@ -25,6 +29,10 @@ public class DatabaseManager {
     }
 
 
+    /**
+     * Inserts the input entry into the SQLite table for the pulse-data
+     * @param entry
+     */
     public void insertPulseData_PULSE(float entry ) {
         if (!isSavingEnabled) return;
 
@@ -35,7 +43,10 @@ public class DatabaseManager {
 
         db.insert(PulseEntry.TABLE_NAME, null, values);
     }
-    public void insertPulseData_O2(float entry ) {
+    /**
+     * Inserts the input entry into the SQLite table for the oxygen-data
+     * @param entry
+     */    public void insertPulseData_O2(float entry ) {
         if (!isSavingEnabled) return;
 
         ContentValues values = new ContentValues();
@@ -50,6 +61,10 @@ public class DatabaseManager {
         dbHelper.close();
     }
 
+    /**
+     * gets the current time in format "yyyy-MM-dd HH:mm:ss"
+     * @return
+     */
     private String getCurrentDateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         return sdf.format(new Date());
@@ -120,6 +135,12 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * returns the average value of the array-entries
+     * @param Buffer
+     * @param elementsInBuffer
+     * @return
+     */
     public float average(float[] Buffer, int elementsInBuffer){
         if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null) return 0;
         float total=0;
@@ -129,10 +150,18 @@ public class DatabaseManager {
         return total/elementsInBuffer;
     }
 
+    /**
+     * Enablesor disables the SQLite saving functionality
+     * @param isEnabled
+     */
     public void setSavingEnabled(boolean isEnabled) {
         this.isSavingEnabled = isEnabled;
     }
 
+    /**
+     * Checks, if the data is being saved
+     * @return
+     */
     public boolean isSavingEnabled() {
         return isSavingEnabled;
     }
