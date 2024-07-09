@@ -11,6 +11,20 @@ import android.view.ViewGroup;
 import java.lang.reflect.*;
 
 import com.google.gson.Gson;
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -18,6 +32,9 @@ import com.google.gson.Gson;
  * create an instance of this fragment.
  */
 public class GraphFragment extends Fragment implements ISubscribe {
+
+    private LineChart lineChart;
+    View root;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -59,13 +76,18 @@ public class GraphFragment extends Fragment implements ISubscribe {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_graph, container, false);
+        root =  inflater.inflate(R.layout.fragment_graph, container, false);
+        lineChart = root.findViewById(R.id.PulsGraph);
+        return root;
     }
 
     @Override
@@ -73,10 +95,46 @@ public class GraphFragment extends Fragment implements ISubscribe {
         Object obj = new Gson().fromJson(message, Object.class);
         message = message.substring(message.indexOf("[[") + 2);
         GraphData data = new GraphData(message.substring(0, message.indexOf("]]")).split("\\},\\{"));
+        setupLineChart();
+        loadDataIntoChart(data.data);
     }
 
     @Override
     public void Unsubscribe() {
         MqttModule.removeSubscription(this);
     }
+
+    private void setupLineChart() {
+        lineChart.getDescription().setEnabled(false);
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setValueFormatter(new ValueFormatter() {
+            private final SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            @Override
+            public String getFormattedValue(float value) {
+                return mFormat.format(new Date((long) value));
+            }
+        });
+    }
+
+    private void loadDataIntoChart(Coordinate[] data) {
+        List<Entry> entries = new ArrayList<>();
+
+        for (Coordinate coordinate : data) {
+            entries.add(new Entry(coordinate.x.getTime(), coordinate.y));
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Heart Rate");
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+        dataSet.setValueTextColor(ColorTemplate.COLORFUL_COLORS[0]);
+        dataSet.setValueTextSize(12f);
+
+        LineData lineData = new LineData(dataSet);
+        lineChart.setData(lineData);
+        lineChart.invalidate(); // Refresh the chart
+    }
 }
+
+
