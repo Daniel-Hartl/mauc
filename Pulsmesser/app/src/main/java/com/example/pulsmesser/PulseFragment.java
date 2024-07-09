@@ -1,11 +1,13 @@
 package com.example.pulsmesser;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +60,14 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        audioPlayer = new AudioPlayer(player);
     }
+
+    MediaPlayer player;
+    public void getPlayer(MediaPlayer player){
+        this.player = player;
+    }
+
     View root;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,6 +85,7 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
             new Handler(Looper.getMainLooper()).post(() -> textPulse.setText(new StringBuilder().append("Puls: ").append(message).append(" bpm").toString()));
         }
         if(addToBuffer(Float.parseFloat(message))>9) saveBuffer();
+        mainActivity.setPulse(Float.parseFloat(message));
     }
 
     public void setAudioPlayer(AudioPlayer audioPlayer){
@@ -86,6 +96,9 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
     public void unsubscribe() {
         MqttModule.removeSubscription(this);
         saveBuffer();
+        if (audioPlayer != null) {
+            audioPlayer.release();
+        }
     }
 
 
@@ -108,6 +121,7 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     @Override
     public void saveBuffer() {
+
         if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null || databaseManager == null)return;
         float total=0;
         for(int i=0; i<elementsInBuffer; i++){
@@ -120,5 +134,10 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
     @Override
     public void setDatabaseManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
+    }
+
+    MainActivity mainActivity;
+    public void setMainActivity(MainActivity mainActivity){
+        this.mainActivity = mainActivity;
     }
 }
