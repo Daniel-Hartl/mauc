@@ -1,6 +1,5 @@
 pluginManagement {
     repositories {
-
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
@@ -10,23 +9,18 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    versionCatalogs {
-        create("libs") {
-            // Stellen Sie sicher, dass die libs.versions.toml Datei existiert und korrekt ist
-            from(files("gradle/libs.versions.toml"))
-        }
-    }
     repositories {
+        maven { url = uri("https://jitpack.io")}
+        maven { url = uri("https://repo.eclipse.org/content/repositories/paho-releases/")}
         google()
         mavenCentral()
     }
 }
-
-rootProject.name = "PulsMesser"
+rootProject.name = "Android_Puls"
 include(":app")
+
  

@@ -11,12 +11,23 @@ import com.example.pulsmesser.databinding.ActivityMainBinding;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.annotation.NonNull;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     Fragment currentFragment;
+    private boolean isSavingEnabled = true;
+    private boolean isSoundEnabled = true;
 
+    private AudioPlayer audioPlayer;
+    private boolean isAudioPlaying = false;
+
+    private ConfigReader configReader;
+    private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +39,14 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        configReader = new ConfigReader();
+        databaseManager = new DatabaseManager(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         replaceFragment(new PulseFragment());
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -44,20 +59,51 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        MqttModule.connect("tcp://broker.hivemq.com", 1883);
+
+        MqttModule.connect(configReader.getUrl(), configReader.getPort(), configReader.getTopicSend(), configReader.getTopicRecieve(), configReader.getUsername());
         MqttModule.subscribeData();
         MqttModule.publishCtrlMessage(SelectedView.heartRate);
 
+        //audioPlayer  =new AudioPlayer(this);
     }
 
     private void replaceFragment(Fragment fragment){
         if (currentFragment instanceof ISubscribe && currentFragment != null)
-            ((ISubscribe)currentFragment).Unsubscribe();
+            ((ISubscribe)currentFragment).unsubscribe();
+        //if(fragment instanceof PulseFragment)
+            //((PulseFragment)fragment).setAudioPlayer(this.audioPlayer);
         FragmentManager mng = getSupportFragmentManager();
         FragmentTransaction transaction = mng.beginTransaction();
         transaction.add(R.id.contentContainer, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
         currentFragment = fragment;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_toggle_save) {
+            isSavingEnabled = !item.isChecked();
+            item.setChecked(isSavingEnabled);
+
+            return true;
+        } else if (item.getItemId() == R.id.action_toggle_audio) {
+            isSoundEnabled = !item.isChecked();
+            item.setChecked(isSoundEnabled);
+            if(isAudioPlaying){
+                audioPlayer = new AudioPlayer(this);
+                audioPlayer.startAudio();
+            }else {
+                audioPlayer.stopAudio();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

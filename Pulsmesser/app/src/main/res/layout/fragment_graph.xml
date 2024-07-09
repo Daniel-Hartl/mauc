@@ -4,12 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".GraphFragment"
-    android:background="#FF0000">
+    android:background="@color/white">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="GRAPH" />
+        android:text="" />
 
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/PulsGraph"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </FrameLayout>
+
