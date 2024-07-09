@@ -1,5 +1,6 @@
 package com.example.pulsmesser;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -12,10 +13,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
+
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.appcompat.widget.Toolbar;
 import android.content.res.AssetManager;
+import android.media.MediaPlayer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,11 +28,13 @@ public class MainActivity extends AppCompatActivity {
     private boolean isSavingEnabled = true;
     private boolean isSoundEnabled = true;
 
-    private AudioPlayer audioPlayer;
     private boolean isAudioPlaying = false;
 
     private ConfigReader configReader;
     private DatabaseManager databaseManager;
+    private MediaPlayer mediaPlayer;
+    private Handler heartbeatHandler;
+    private Runnable heartbeatRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         configReader = new ConfigReader();
+        //databaseManager.setSavingEnabled(true);
+
 
         configReader.loadConfig(this);
         databaseManager = new DatabaseManager(this);
@@ -67,14 +75,28 @@ public class MainActivity extends AppCompatActivity {
         MqttModule.subscribeData();
         MqttModule.publishCtrlMessage(SelectedView.heartRate);
 
-        //audioPlayer  =new AudioPlayer(this);
+        mediaPlayer = MediaPlayer.create(this, R.raw.herz);
+        heartbeatHandler = new Handler();
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isSoundEnabled && pulse>0) {
+                    playHeartbeat();
+                }
+                heartbeatHandler.postDelayed(this, getHeartbeatInterval());
+            }
+        };
+        startHeartbeatSimulation();
     }
+
 
     private void replaceFragment(Fragment fragment){
         if (currentFragment instanceof ISubscribe && currentFragment != null)
             ((ISubscribe)currentFragment).unsubscribe();
-        //if(fragment instanceof PulseFragment)
-            //((PulseFragment)fragment).setAudioPlayer(this.audioPlayer);
+        if(fragment instanceof PulseFragment)
+            {((PulseFragment) fragment).setMainActivity(this);}
+        if(fragment instanceof ISaveToDb)
+            { ((ISaveToDb) fragment).setDatabaseManager(databaseManager);}
         FragmentManager mng = getSupportFragmentManager();
         FragmentTransaction transaction = mng.beginTransaction();
         transaction.add(R.id.contentContainer, fragment);
@@ -94,19 +116,39 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_toggle_save) {
             isSavingEnabled = !item.isChecked();
             item.setChecked(isSavingEnabled);
+            databaseManager.setSavingEnabled(isSavingEnabled);
 
             return true;
         } else if (item.getItemId() == R.id.action_toggle_audio) {
             isSoundEnabled = !item.isChecked();
             item.setChecked(isSoundEnabled);
-            if(isAudioPlaying){
-                audioPlayer = new AudioPlayer(this);
-                audioPlayer.startAudio();
+            if(mediaPlayer.isPlaying()){
+                mediaPlayer.stop();
             }else {
-                audioPlayer.stopAudio();
+                mediaPlayer.start();
             }
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void playHeartbeat() {
+        if (mediaPlayer != null) {
+            mediaPlayer.start();
+        }
+    }
+    private long getHeartbeatInterval() {
+        // Berechne das Intervall basierend auf dem Pulswert
+        return (long)(60000 / pulse); // Intervall in Millisekunden (60 Sekunden / bpm)
+    }
+    private void startHeartbeatSimulation() {
+        if (heartbeatHandler != null && heartbeatRunnable != null) {
+            heartbeatHandler.post(heartbeatRunnable);
+        }
+    }
+
+    float pulse = 100;
+    public void setPulse(float pulse){
+        this.pulse = pulse;
     }
 }

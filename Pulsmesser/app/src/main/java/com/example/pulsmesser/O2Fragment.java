@@ -104,12 +104,8 @@ public class O2Fragment extends Fragment implements ISubscribe ,ISaveToDb{
 
     @Override
     public void saveBuffer() {
-        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null || databaseManager == null)return;
-        float total=0;
-        for(int i=0; i<elementsInBuffer; i++){
-            total += Buffer[i];
-        }
-        databaseManager.insertPulseData_O2(total/elementsInBuffer);
+        float erg = databaseManager.average(Buffer, elementsInBuffer);
+        databaseManager.insertPulseData_O2(erg);
         elementsInBuffer = 0;
     }
 

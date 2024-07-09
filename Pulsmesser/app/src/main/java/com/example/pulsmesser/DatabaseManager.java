@@ -16,17 +16,18 @@ public class DatabaseManager {
     private ConfigReader configReader;
     private PulseDatabaseHelper dbHelper;
     private SQLiteDatabase db;
-    private Timer aggregationTimer;
+    private boolean isSavingEnabled = true;
 
     public DatabaseManager(Context context) {
         configReader = new ConfigReader();
         dbHelper = new PulseDatabaseHelper(context);
         db = dbHelper.getWritableDatabase();
-        startDataAggregation();
     }
 
 
     public void insertPulseData_PULSE(float entry ) {
+        if (!isSavingEnabled) return;
+
         ContentValues values = new ContentValues();
         values.put(PulseEntry.COLUMN_NAME_USERNAME, configReader.getUsername());
         values.put(PulseEntry.COLUMN_NAME_DATE, getCurrentDateTime());
@@ -35,6 +36,8 @@ public class DatabaseManager {
         db.insert(PulseEntry.TABLE_NAME, null, values);
     }
     public void insertPulseData_O2(float entry ) {
+        if (!isSavingEnabled) return;
+
         ContentValues values = new ContentValues();
         values.put(O2Entry.COLUMN_NAME_USERNAME, configReader.getUsername());
         values.put(O2Entry.COLUMN_NAME_DATE, getCurrentDateTime());
@@ -44,9 +47,6 @@ public class DatabaseManager {
     }
 
     public void close() {
-        if (aggregationTimer != null) {
-            aggregationTimer.cancel();
-        }
         dbHelper.close();
     }
 
@@ -110,20 +110,30 @@ public class DatabaseManager {
             db.execSQL(SQL_CREATE_ENTRIES_O2);
             onCreate(db);
         }
-    }
 
-    private void startDataAggregation() {
-        aggregationTimer = new Timer();
-        aggregationTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                aggregateData();
+        public boolean enabled = true;
+        public void Disabled(boolean disabled){
+            if(disabled){
+                enabled = false;
             }
-        }, 0, 10000); // Alle 10 Sekunden
+            else enabled = true;
+        }
     }
 
-    private void aggregateData() {
-
+    public float average(float[] Buffer, int elementsInBuffer){
+        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null) return 0;
+        float total=0;
+        for(int i=0; i<elementsInBuffer; i++){
+            total += Buffer[i];
+        }
+        return total/elementsInBuffer;
     }
 
+    public void setSavingEnabled(boolean isEnabled) {
+        this.isSavingEnabled = isEnabled;
+    }
+
+    public boolean isSavingEnabled() {
+        return isSavingEnabled;
+    }
 }

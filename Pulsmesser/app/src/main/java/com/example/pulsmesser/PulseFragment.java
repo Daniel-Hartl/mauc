@@ -1,11 +1,13 @@
 package com.example.pulsmesser;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +24,6 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private AudioPlayer audioPlayer;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -59,6 +60,8 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
+
+
     View root;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,17 +78,18 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
         if (textPulse != null) {
             new Handler(Looper.getMainLooper()).post(() -> textPulse.setText(new StringBuilder().append("Puls: ").append(message).append(" bpm").toString()));
         }
-        if(addToBuffer(Float.parseFloat(message))>9) saveBuffer();
+        if(addToBuffer(Float.parseFloat(message))>9)
+            saveBuffer();
+        mainActivity.setPulse(Float.parseFloat(message));
     }
 
-    public void setAudioPlayer(AudioPlayer audioPlayer){
-        this.audioPlayer = audioPlayer;
-    }
+
 
     @Override
     public void unsubscribe() {
         MqttModule.removeSubscription(this);
         saveBuffer();
+
     }
 
 
@@ -108,17 +112,18 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     @Override
     public void saveBuffer() {
-        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null || databaseManager == null)return;
-        float total=0;
-        for(int i=0; i<elementsInBuffer; i++){
-            total += Buffer[i];
-        }
-        databaseManager.insertPulseData_PULSE(total/elementsInBuffer);
+        float erg = databaseManager.average(Buffer, elementsInBuffer);
+        databaseManager.insertPulseData_PULSE(erg);
         elementsInBuffer = 0;
     }
 
     @Override
     public void setDatabaseManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
+    }
+
+    MainActivity mainActivity;
+    public void setMainActivity(MainActivity mainActivity){
+        this.mainActivity = mainActivity;
     }
 }

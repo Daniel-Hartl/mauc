@@ -1,9 +1,8 @@
 package com.example.pulsmesser;
 
-import android.content.Context;
 import android.media.MediaPlayer;
 import java.util.Timer;
-import java.util.TimerTask;
+
 import android.os.Handler;
 
 public class AudioPlayer {
@@ -14,18 +13,15 @@ public class AudioPlayer {
     private Handler heartbeatHandler;
     private Runnable heartbeatRunnable;
 
-    public AudioPlayer(Context context) {
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.create(context, R.raw.herzschlag);
+    public AudioPlayer(MediaPlayer context) {
         heartbeatHandler = new Handler();
         heartbeatRunnable = new Runnable() {
             @Override
             public void run() {
-                playHeartbeat();
+                context.start();
                 heartbeatHandler.postDelayed(this, getHeartbeatInterval());
             }
         };
-        startAudio();
     }
 
 
@@ -57,6 +53,12 @@ public class AudioPlayer {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
             mediaPlayer.release();
+        }
+    }
+    public void release() {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 }
