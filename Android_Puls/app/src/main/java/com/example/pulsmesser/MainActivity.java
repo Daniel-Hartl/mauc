@@ -61,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity implements MqttHelper.MessageListener {
 
+
     private static final int REQUEST_CODE_PERMISSIONS = 1;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION,

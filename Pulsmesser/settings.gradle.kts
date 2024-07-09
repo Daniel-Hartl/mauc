@@ -14,13 +14,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven { url = uri("https://jitpack.io")}
-        maven { url = uri("https://repo.eclipse.org/content/repositories/paho-releases/")}
         google()
         mavenCentral()
     }
 }
-rootProject.name = "Android_Puls"
-include(":app")
 
- 
+rootProject.name = "Pulsmesser"
+include(":app")
