@@ -10,27 +10,83 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
+/**
+ * The MQTT interface of this application.
+ */
 public class MqttModule {
-    private static final String ctrlTopic = "afkdcdjkcnks/sensor/ctrl/raw/sensor";
-    private static final String dataTopic = "afkdcdjkcnks/sensor/data/raw/sensor";
+    /**
+     * The brokertopic to post ctrl messages to. (part of connection params)
+     */
+    private static String ctrlTopic;
 
-    private static ISubscribe[] subscribers = new ISubscribe[3];
+    /**
+     * The brokertopic to receive data messages from. (part of connection params)
+     */
+    private static String dataTopic;
 
+    /**
+     * The used name to connect to the broker. (part of connection params)
+     */
+    private static String clientName;
+
+    /**
+     * A array containing the active message subscriptions.
+     */
+    private static final ISubscribe[] subscribers = new ISubscribe[3];
+
+    /**
+     * The used paho client.
+     */
     private static MqttClient client;
+
+    /**
+     * A boolean indicating whether the client is currently connected.
+     */
     private static boolean isConnected;
 
-    public static boolean connect(String brokerUrl, int brokerPort, boolean forceReinit){
+    /**
+     * Initializes the connection params.
+     * @param newCtrlTopic the new ctrlTopic.
+     * @param newDataTopic the new dataTopic.
+     * @param newClientName the new clientName.
+     */
+    public static void init(String newCtrlTopic, String newDataTopic, String newClientName){
+        ctrlTopic = newCtrlTopic;
+        dataTopic = newDataTopic;
+        clientName = newClientName;
+    }
 
-        if(isConnected && !forceReinit)
+    /**
+     * Checks whether the connection params are correctly initialized.
+     * @return whether ctrlTopic, dataTopic and clientName arent null or empty.
+     */
+    public static boolean isInit(){
+        return !(ctrlTopic == null || ctrlTopic.isEmpty()) &&
+                !(dataTopic == null || dataTopic.isEmpty()) &&
+                !(clientName == null || clientName.isEmpty());
+    }
+
+    /**
+     * Tries to establish a connection to the broker.
+     * @param brokerUrl the brokers url.
+     * @param brokerPort the port the broker listens to.
+     * @return whether the connection attempt was successful.
+     */
+    public static boolean connect(String brokerUrl, int brokerPort){
+        // check if the connection params are set and return false
+        if(!isInit())
+            return false;
+
+        // check whether a connection was already established and return true, as the client is connected.
+        if(isConnected)
             return true;
 
         try{
             MemoryPersistence persistence = new MemoryPersistence();
 
             client = new MqttClient(brokerUrl + ":" + String.valueOf(brokerPort),
-                    "app", persistence);
+                    clientName, persistence);
 
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(true);
@@ -39,30 +95,49 @@ public class MqttModule {
             isConnected = true;
         }
         catch (MqttException exc){
-            Log.w("MqttModule", exc);
+            Log.w("MqttModule.connect", exc);
             isConnected = false;
         }
 
+        subscribeData();
         return isConnected;
     }
 
-    public static void connect(String brokerUrl, int brokerPort){
-        connect(brokerUrl, brokerPort,false);
+    /**
+     * Combines connect(string, int) and init().
+     * @param brokerUrl the brokers url.
+     * @param brokerPort the port the broker listens to.
+     * @param ctrlTopic the new ctrlTopic.
+     * @param dataTopic the new dataTopic.
+     * @param clientName the new clientName.
+     */
+    public static void connect(String brokerUrl, int brokerPort, String ctrlTopic, String dataTopic, String clientName){
+        init(ctrlTopic, dataTopic, clientName);
+        connect(brokerUrl, brokerPort);
     }
 
+    /**
+     * disconnects the client from the broker
+     * @return whether the disconnection was successful.
+     */
     public static boolean disconnect() {
         try {
             client.disconnect();
             isConnected = false;
         } catch (MqttException exc) {
-            Log.w("MqttModule", exc);
+            Log.w("MqttModule.disconnect", exc);
         }
 
         return !isConnected;
     }
 
+    /**
+     * publishes a message to the ctrl topic of the connected broker
+     * @param message The enum value for the selected view.
+     * @return a boolean value indicating whether the message has bin sent successfully.
+     */
     public static boolean publishCtrlMessage(SelectedView message) {
-        if(!isConnected)
+        if(!isConnected || !isInit())
             return false;
         try {
             MqttMessage mqttMessage = new MqttMessage(String.valueOf(message.ordinal()).getBytes());
@@ -75,30 +150,12 @@ public class MqttModule {
         }
     }
 
-    public static boolean addSubscription(ISubscribe newSub){
-        for (int i = 0; i < subscribers.length; i++){
-            if(subscribers[i] == null) {
-                subscribers[i] = newSub;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public  static boolean removeSubscription(ISubscribe deleteSub){
-        for (int i = 0; i < subscribers.length; i++){
-            if(subscribers[i] == deleteSub) {
-                subscribers[i] = null;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+    /**
+     * Subscribes the data topic.
+     * @return whether the subscription was completed successfully.
+     */
     public static boolean subscribeData(){
-        if(!isConnected)
+        if(!isConnected || !isInit())
             return false;
         try {
             client.subscribe(dataTopic);
@@ -108,7 +165,7 @@ public class MqttModule {
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     for (ISubscribe subscriber : subscribers) {
                         if (subscriber != null) {
-                            subscriber.OnMessageReceived(new String(message.getPayload(), StandardCharsets.UTF_8));
+                            subscriber.onMessageReceived(new String(message.getPayload(), StandardCharsets.UTF_8));
                         }
                     }
                 }
@@ -126,5 +183,37 @@ public class MqttModule {
             Log.w("MqttModule.subscribeMessage", exc);
             return false;
         }
+    }
+
+    /**
+     * adds a subscriber.
+     * @param newSub the new subscribing object.
+     * @return whether the subscription is completed.
+     */
+    public static boolean addSubscription(ISubscribe newSub){
+        for (int i = 0; i < subscribers.length; i++){
+            if(subscribers[i] == null) {
+                subscribers[i] = newSub;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * removes a subscriber.
+     * @param deleteSub the subscribing object to be removed.
+     * @return whether the unsubscription is completed.
+     */
+    public  static boolean removeSubscription(ISubscribe deleteSub){
+        for (int i = 0; i < subscribers.length; i++){
+            if(subscribers[i] == deleteSub) {
+                subscribers[i] = null;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

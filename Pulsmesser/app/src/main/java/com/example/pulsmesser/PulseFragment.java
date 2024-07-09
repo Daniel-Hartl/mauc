@@ -16,12 +16,13 @@ import android.widget.TextView;
  * Use the {@link PulseFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PulseFragment extends Fragment implements ISubscribe {
+public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private AudioPlayer audioPlayer;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -69,15 +70,54 @@ public class PulseFragment extends Fragment implements ISubscribe {
     }
 
     @Override
-    public void OnMessageReceived(String message) {
+    public void onMessageReceived(String message) {
         TextView textPulse = root.findViewById(R.id.text_pulse);
         if (textPulse != null) {
             new Handler(Looper.getMainLooper()).post(() -> textPulse.setText(new StringBuilder().append("Puls: ").append(message).append(" bpm").toString()));
         }
+        if(addToBuffer(Float.parseFloat(message))>9) saveBuffer();
+    }
+
+    public void setAudioPlayer(AudioPlayer audioPlayer){
+        this.audioPlayer = audioPlayer;
     }
 
     @Override
-    public void Unsubscribe() {
+    public void unsubscribe() {
         MqttModule.removeSubscription(this);
+        saveBuffer();
+    }
+
+
+
+
+    int elementsInBuffer=0;
+    float[] Buffer = new float[10];
+    DatabaseManager databaseManager;
+    @Override
+    public float[] getBuffer() {
+        return Buffer;
+    }
+
+    @Override
+    public int addToBuffer(float element) {
+        Buffer[elementsInBuffer] = element;
+        elementsInBuffer++;
+        return elementsInBuffer;
+    }
+
+    @Override
+    public void saveBuffer() {
+        float total=0;
+        for(int i=0; i<elementsInBuffer; i++){
+            total += Buffer[i];
+        }
+        databaseManager.insertPulseData_PULSE(total/elementsInBuffer);
+        elementsInBuffer = 0;
+    }
+
+    @Override
+    public void setDatabaseManager(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
     }
 }

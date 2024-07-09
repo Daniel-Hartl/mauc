@@ -31,7 +31,7 @@ import java.util.Locale;
  * Use the {@link GraphFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class GraphFragment extends Fragment implements ISubscribe {
+public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
 
     private LineChart lineChart;
     View root;
@@ -91,17 +91,20 @@ public class GraphFragment extends Fragment implements ISubscribe {
     }
 
     @Override
-    public void OnMessageReceived(String message) {
+    public void onMessageReceived(String message) {
         Object obj = new Gson().fromJson(message, Object.class);
         message = message.substring(message.indexOf("[[") + 2);
         GraphData data = new GraphData(message.substring(0, message.indexOf("]]")).split("\\},\\{"));
         setupLineChart();
         loadDataIntoChart(data.data);
+        float lastY = data.data[message.substring(0, message.indexOf("]]")).split("\\},\\{").length].y;
+        if(addToBuffer(lastY)>9) saveBuffer();
     }
 
     @Override
-    public void Unsubscribe() {
+    public void unsubscribe() {
         MqttModule.removeSubscription(this);
+        saveBuffer();
     }
 
     private void setupLineChart() {
@@ -134,6 +137,39 @@ public class GraphFragment extends Fragment implements ISubscribe {
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData);
         lineChart.invalidate(); // Refresh the chart
+        Log.d("GraphFragment", "Data loaded into chart");
+    }
+
+
+
+    int elementsInBuffer=0;
+    float[] Buffer = new float[10];
+    DatabaseManager databaseManager;
+    @Override
+    public float[] getBuffer() {
+        return Buffer;
+    }
+
+    @Override
+    public int addToBuffer(float element) {
+        Buffer[elementsInBuffer] = element;
+        elementsInBuffer++;
+        return elementsInBuffer;
+    }
+
+    @Override
+    public void saveBuffer() {
+        float total=0;
+        for(int i=0; i<elementsInBuffer; i++){
+            total += Buffer[i];
+        }
+        databaseManager.insertPulseData_PULSE(total/elementsInBuffer);
+        elementsInBuffer = 0;
+    }
+
+    @Override
+    public void setDatabaseManager(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
     }
 }
 

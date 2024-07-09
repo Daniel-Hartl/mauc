@@ -20,18 +20,20 @@ import com.example.pulsmesser.databinding.FragmentO2Binding;
  * Use the {@link O2Fragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class O2Fragment extends Fragment implements ISubscribe {
+public class O2Fragment extends Fragment implements ISubscribe ,ISaveToDb{
     @Override
-    public void OnMessageReceived(String message) {
+    public void onMessageReceived(String message) {
         TextView textO2 = root.findViewById(R.id.text_o2);
         if (textO2 != null) {
             new Handler(Looper.getMainLooper()).post(() -> textO2.setText(new StringBuilder().append("Sauerstoffgehalt: ").append(message).append("%").toString()));
         }
+        if(addToBuffer(Float.parseFloat(message))>9) saveBuffer();
     }
 
     @Override
-    public void Unsubscribe() {
+    public void unsubscribe() {
         MqttModule.removeSubscription(this);
+        saveBuffer();
     }
 
     // TODO: Rename parameter arguments, choose names that match
@@ -73,9 +75,6 @@ public class O2Fragment extends Fragment implements ISubscribe {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        Log.w("", "o2 initialized");
-
-
     }
     View root;
     @Override
@@ -85,5 +84,36 @@ public class O2Fragment extends Fragment implements ISubscribe {
         root =  inflater.inflate(R.layout.fragment_o2, container, false);
         return root;
         //return inflater.inflate(R.layout.fragment_o2, container, false);
+    }
+
+
+    int elementsInBuffer=0;
+    float[] Buffer = new float[10];
+    DatabaseManager databaseManager;
+    @Override
+    public float[] getBuffer() {
+        return Buffer;
+    }
+
+    @Override
+    public int addToBuffer(float element) {
+        Buffer[elementsInBuffer] = element;
+        elementsInBuffer++;
+        return elementsInBuffer;
+    }
+
+    @Override
+    public void saveBuffer() {
+        float total=0;
+        for(int i=0; i<elementsInBuffer; i++){
+            total += Buffer[i];
+        }
+        databaseManager.insertPulseData_O2(total/elementsInBuffer);
+        elementsInBuffer = 0;
+    }
+
+    @Override
+    public void setDatabaseManager(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
     }
 }
