@@ -78,7 +78,8 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
         if (textPulse != null) {
             new Handler(Looper.getMainLooper()).post(() -> textPulse.setText(new StringBuilder().append("Puls: ").append(message).append(" bpm").toString()));
         }
-        if(addToBuffer(Float.parseFloat(message))>9) saveBuffer();
+        if(addToBuffer(Float.parseFloat(message))>9)
+            saveBuffer();
         mainActivity.setPulse(Float.parseFloat(message));
     }
 
@@ -104,7 +105,6 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     @Override
     public int addToBuffer(float element) {
-        if(!databaseManager.isSavingEnabled()) return elementsInBuffer;
         Buffer[elementsInBuffer] = element;
         elementsInBuffer++;
         return elementsInBuffer;
@@ -112,13 +112,8 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     @Override
     public void saveBuffer() {
-        if(!databaseManager.isSavingEnabled()) return;
-        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null || databaseManager == null)return;
-        float total=0;
-        for(int i=0; i<elementsInBuffer; i++){
-            total += Buffer[i];
-        }
-        databaseManager.insertPulseData_PULSE(total/elementsInBuffer);
+        float erg = databaseManager.average(Buffer, elementsInBuffer);
+        databaseManager.insertPulseData_PULSE(erg);
         elementsInBuffer = 0;
     }
 

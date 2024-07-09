@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         configReader = new ConfigReader();
+        //databaseManager.setSavingEnabled(true);
+
 
         configReader.loadConfig(this);
         databaseManager = new DatabaseManager(this);
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         heartbeatRunnable = new Runnable() {
             @Override
             public void run() {
-                if (isSoundEnabled) {
+                if (isSoundEnabled && pulse>0) {
                     playHeartbeat();
                 }
                 heartbeatHandler.postDelayed(this, getHeartbeatInterval());
@@ -91,7 +93,10 @@ public class MainActivity extends AppCompatActivity {
     private void replaceFragment(Fragment fragment){
         if (currentFragment instanceof ISubscribe && currentFragment != null)
             ((ISubscribe)currentFragment).unsubscribe();
-        if(fragment instanceof PulseFragment){((PulseFragment) fragment).setMainActivity(this);}
+        if(fragment instanceof PulseFragment)
+            {((PulseFragment) fragment).setMainActivity(this);}
+        if(fragment instanceof ISaveToDb)
+            { ((ISaveToDb) fragment).setDatabaseManager(databaseManager);}
         FragmentManager mng = getSupportFragmentManager();
         FragmentTransaction transaction = mng.beginTransaction();
         transaction.add(R.id.contentContainer, fragment);

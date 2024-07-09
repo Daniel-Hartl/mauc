@@ -152,7 +152,6 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
 
     @Override
     public int addToBuffer(float element) {
-        if(!databaseManager.isSavingEnabled()) return elementsInBuffer;
         Buffer[elementsInBuffer] = element;
         elementsInBuffer++;
         return elementsInBuffer;
@@ -160,13 +159,8 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
 
     @Override
     public void saveBuffer() {
-        if(!databaseManager.isSavingEnabled()) return;
-        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null || databaseManager == null)return;
-        float total=0;
-        for(int i=0; i<elementsInBuffer; i++){
-            total += Buffer[i];
-        }
-        databaseManager.insertPulseData_PULSE(total/elementsInBuffer);
+        float erg = databaseManager.average(Buffer, elementsInBuffer);
+        databaseManager.insertPulseData_PULSE(erg);
         elementsInBuffer = 0;
     }
 

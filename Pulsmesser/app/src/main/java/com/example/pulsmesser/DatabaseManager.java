@@ -120,6 +120,15 @@ public class DatabaseManager {
         }
     }
 
+    public float average(float[] Buffer, int elementsInBuffer){
+        if(elementsInBuffer < 0 || elementsInBuffer>10 || Buffer == null) return 0;
+        float total=0;
+        for(int i=0; i<elementsInBuffer; i++){
+            total += Buffer[i];
+        }
+        return total/elementsInBuffer;
+    }
+
     public void setSavingEnabled(boolean isEnabled) {
         this.isSavingEnabled = isEnabled;
     }
