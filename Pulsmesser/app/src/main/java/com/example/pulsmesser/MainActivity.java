@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_toggle_save) {
             isSavingEnabled = !item.isChecked();
             item.setChecked(isSavingEnabled);
+            databaseManager.setSavingEnabled(isSavingEnabled);
 
             return true;
         } else if (item.getItemId() == R.id.action_toggle_audio) {
