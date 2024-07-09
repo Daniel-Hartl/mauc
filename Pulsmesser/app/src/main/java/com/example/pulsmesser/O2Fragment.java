@@ -90,10 +90,6 @@ public class O2Fragment extends Fragment implements ISubscribe ,ISaveToDb{
     int elementsInBuffer=0;
     float[] Buffer = new float[10];
     DatabaseManager databaseManager;
-    @Override
-    public float[] getBuffer() {
-        return Buffer;
-    }
 
     @Override
     public int addToBuffer(float element) {

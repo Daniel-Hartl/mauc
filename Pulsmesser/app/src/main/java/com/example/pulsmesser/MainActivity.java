@@ -32,9 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ConfigReader configReader;
     private DatabaseManager databaseManager;
-    private MediaPlayer mediaPlayer;
-    private Handler heartbeatHandler;
-    private Runnable heartbeatRunnable;
+    private AudioPlayer audioPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         configReader = new ConfigReader();
-        //databaseManager.setSavingEnabled(true);
-
-
         configReader.loadConfig(this);
+
+        audioPlayer = new AudioPlayer(MediaPlayer.create(this, R.raw.herz)) ;
         databaseManager = new DatabaseManager(this);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         replaceFragment(new PulseFragment());
@@ -71,30 +69,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        MqttModule.connect(configReader.getUrl(), configReader.getPort(), configReader.getTopicSend(), configReader.getTopicRecieve(), configReader.getUsername());
-        MqttModule.subscribeData();
-        MqttModule.publishCtrlMessage(SelectedView.heartRate);
+        MqttModule.connect(configReader.getUrl(), configReader.getPort(),
+                configReader.getTopicSend(), configReader.getTopicRecieve(),
+                configReader.getUsername());
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.herz);
-        heartbeatHandler = new Handler();
-        heartbeatRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (isSoundEnabled && pulse>0) {
-                    playHeartbeat();
-                }
-                heartbeatHandler.postDelayed(this, getHeartbeatInterval());
-            }
-        };
-        startHeartbeatSimulation();
     }
 
 
     private void replaceFragment(Fragment fragment){
+        if (!MqttModule.getConnected())
+            MqttModule.connect(configReader.getUrl(), configReader.getPort(),
+                    configReader.getTopicSend(), configReader.getTopicRecieve(),
+                    configReader.getUsername());
         if (currentFragment instanceof ISubscribe && currentFragment != null)
             ((ISubscribe)currentFragment).unsubscribe();
-        if(fragment instanceof PulseFragment)
-            {((PulseFragment) fragment).setMainActivity(this);}
+        if(fragment instanceof PulseFragment) {
+           // ((PulseFragment) fragment).setMainActivity(this);
+            ((PulseFragment) fragment).setAudioModule(audioPlayer);
+        }
         if(fragment instanceof ISaveToDb)
             { ((ISaveToDb) fragment).setDatabaseManager(databaseManager);}
         FragmentManager mng = getSupportFragmentManager();
@@ -119,36 +111,15 @@ public class MainActivity extends AppCompatActivity {
             databaseManager.setSavingEnabled(isSavingEnabled);
 
             return true;
-        } else if (item.getItemId() == R.id.action_toggle_audio) {
+        }
+        else if (item.getItemId() == R.id.action_toggle_audio) {
             isSoundEnabled = !item.isChecked();
             item.setChecked(isSoundEnabled);
-            if(mediaPlayer.isPlaying()){
-                mediaPlayer.stop();
-            }else {
-                mediaPlayer.start();
-            }
+            if(currentFragment instanceof PulseFragment)
+                ((PulseFragment) currentFragment).toggleAudio(isSoundEnabled);
             return true;
         }
+
         return super.onOptionsItemSelected(item);
-    }
-
-    private void playHeartbeat() {
-        if (mediaPlayer != null) {
-            mediaPlayer.start();
-        }
-    }
-    private long getHeartbeatInterval() {
-        // Berechne das Intervall basierend auf dem Pulswert
-        return (long)(60000 / pulse); // Intervall in Millisekunden (60 Sekunden / bpm)
-    }
-    private void startHeartbeatSimulation() {
-        if (heartbeatHandler != null && heartbeatRunnable != null) {
-            heartbeatHandler.post(heartbeatRunnable);
-        }
-    }
-
-    float pulse = 100;
-    public void setPulse(float pulse){
-        this.pulse = pulse;
     }
 }

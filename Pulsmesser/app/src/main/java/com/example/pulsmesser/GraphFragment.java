@@ -45,6 +45,10 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
     private String mParam1;
     private String mParam2;
 
+    int elementsInBuffer=0;
+    float[] Buffer = new float[10];
+    DatabaseManager databaseManager;
+
     public GraphFragment() {
         // Required empty public constructor
     }
@@ -142,13 +146,6 @@ public class GraphFragment extends Fragment implements ISubscribe, ISaveToDb{
 
 
 
-    int elementsInBuffer=0;
-    float[] Buffer = new float[10];
-    DatabaseManager databaseManager;
-    @Override
-    public float[] getBuffer() {
-        return Buffer;
-    }
 
     @Override
     public int addToBuffer(float element) {

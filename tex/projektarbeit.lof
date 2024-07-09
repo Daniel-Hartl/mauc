@@ -3,4 +3,5 @@
 \contentsline {figure}{\numberline {2}{\ignorespaces Verkabelung des ESP\_32 mit dem MAX30100\cite {max30100tutorial}}}{3}{figure.2}%
 \contentsline {figure}{\numberline {3}{\ignorespaces Node-RED\cite {nodeRED} Datenfluss Darstellung}}{5}{figure.3}%
 \contentsline {figure}{\numberline {4}{\ignorespaces Node-RED Dashboard}}{6}{figure.4}%
-\contentsline {figure}{\numberline {5}{\ignorespaces Methoden der Klasse MqttModule}}{8}{figure.5}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Die Views der Applikation}}{8}{figure.5}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Methoden der Klasse MqttModule}}{9}{figure.6}%

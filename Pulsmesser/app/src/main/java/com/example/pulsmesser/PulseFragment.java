@@ -29,6 +29,13 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
     private String mParam1;
     private String mParam2;
 
+    int elementsInBuffer;
+    float[] Buffer = new float[10];
+
+    DatabaseManager databaseManager;
+
+    private AudioPlayer audioModule;
+
     public PulseFragment() {
     }
 
@@ -52,6 +59,7 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        elementsInBuffer = 0;
         MqttModule.addSubscription(this);
         MqttModule.publishCtrlMessage(SelectedView.heartRate);
         super.onCreate(savedInstanceState);
@@ -76,11 +84,22 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
     public void onMessageReceived(String message) {
         TextView textPulse = root.findViewById(R.id.text_pulse);
         if (textPulse != null) {
-            new Handler(Looper.getMainLooper()).post(() -> textPulse.setText(new StringBuilder().append("Puls: ").append(message).append(" bpm").toString()));
+            new Handler(Looper.getMainLooper()).post(()
+                    -> textPulse.setText(new StringBuilder().append("Puls: ")
+                    .append(message).append(" bpm").toString()));
         }
-        if(addToBuffer(Float.parseFloat(message))>9)
+
+        // if message is no float => return
+        if(!message.matches("[-+]?[0-9]*\\.?[0-9]+")) {
+            audioModule.stopAudio();
+            return;
+        }
+
+        if(addToBuffer(Float.parseFloat(message)) > 9)
             saveBuffer();
-        mainActivity.setPulse(Float.parseFloat(message));
+
+        audioModule.setPulse((int)Float.parseFloat(message));
+
     }
 
 
@@ -90,17 +109,6 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
         MqttModule.removeSubscription(this);
         saveBuffer();
 
-    }
-
-
-
-
-    int elementsInBuffer=0;
-    float[] Buffer = new float[10];
-    DatabaseManager databaseManager;
-    @Override
-    public float[] getBuffer() {
-        return Buffer;
     }
 
     @Override
@@ -122,8 +130,16 @@ public class PulseFragment extends Fragment implements ISubscribe, ISaveToDb {
         this.databaseManager = databaseManager;
     }
 
-    MainActivity mainActivity;
-    public void setMainActivity(MainActivity mainActivity){
-        this.mainActivity = mainActivity;
+    public void setAudioModule(AudioPlayer module){
+        if(module != null)
+            audioModule = module;
+    }
+
+    public void toggleAudio(boolean isOn){
+        if(isOn){
+            audioModule.startAudio();
+        }
+        else
+            audioModule.stopAudio();
     }
 }

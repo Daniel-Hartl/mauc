@@ -342,9 +342,19 @@ enum SelectedView
   	  
   	  
   	  \subsubsection{Frontend}
-  	  
-  	  
-  	  
+  	    Die App besteht aus drei Views, jeweils eine für die in \ref{srcSelectedView} angebotenen Werte.
+  	    
+  	  	\begin{figure}[tph!]
+  	  		\begin{center}
+  	  			\includegraphics[height=6cm]{pulseview}
+  	  			\includegraphics[height=6cm]{graph}
+  	  			\includegraphics[height=6cm]{o2}
+  	  			\caption{Die Views der Applikation}
+  	  			\label{fig:pulseview}
+  	  		\end{center}
+  	  	\end{figure}
+    	\paragraph{Pulsview}~\\
+  	  	Hier wird der, vom Broker empfangene Puls als float-Zahl angezeigt. Zudem ertönt ein Herzschlag in Geschwindigkeit, die von dem erhaltenen Wert vorgegeben ist. Dieser lässt sich im Kontextmenü oben rechts ausschalten.
   	  
   \subsubsection{MQTT Schnittstelle}
    Die MQTT Schnittstelle besteht aus zwei Bereichen. Zuerst dem eigentlichen Client, der in Kapitel \ref{par:mqtt} näher beschrieben wird und dann dem Interface, welches zur Weitergabe der Nachrichten in der Applikation dient und in Kapitel \ref{par:isubscribe} erläutert ist.

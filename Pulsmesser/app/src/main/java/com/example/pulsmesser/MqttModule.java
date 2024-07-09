@@ -45,6 +45,8 @@ public class MqttModule {
      */
     private static boolean isConnected;
 
+    private static String uri;
+
     /**
      * Initializes the connection params.
      * @param newCtrlTopic the new ctrlTopic.
@@ -74,6 +76,11 @@ public class MqttModule {
      * @return whether the connection attempt was successful.
      */
     public static boolean connect(String brokerUrl, int brokerPort){
+        uri = "tcp://" + brokerUrl + ":" + String.valueOf(brokerPort);
+        return connect();
+    }
+
+    private static boolean connect(){
         // check if the connection params are set and return false
         if(!isInit())
             return false;
@@ -84,8 +91,7 @@ public class MqttModule {
 
         try{
             MemoryPersistence persistence = new MemoryPersistence();
-
-            client = new MqttClient(brokerUrl + ":" + String.valueOf(brokerPort),
+            client = new MqttClient(uri,
                     clientName, persistence);
 
             MqttConnectOptions options = new MqttConnectOptions();
@@ -146,6 +152,7 @@ public class MqttModule {
         }
         catch (MqttException exc) {
             Log.w("MqttModule.publishCtrlMessage", exc);
+            isConnected = false;
             return false;
         }
     }
@@ -181,6 +188,7 @@ public class MqttModule {
             return  true;
         } catch (MqttException exc) {
             Log.w("MqttModule.subscribeMessage", exc);
+            isConnected = false;
             return false;
         }
     }
@@ -215,5 +223,9 @@ public class MqttModule {
         }
 
         return false;
+    }
+
+    public static boolean getConnected(){
+        return isConnected;
     }
 }

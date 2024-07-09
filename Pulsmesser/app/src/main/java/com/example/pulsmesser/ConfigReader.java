@@ -40,7 +40,7 @@ public class ConfigReader {
 
     /**
      * returns the username from config.properties
-     * @return
+     * @return username
      */
     public String getUsername(){
         return username;
@@ -48,7 +48,7 @@ public class ConfigReader {
 
     /**
      * returns the MQTT-Broker-URL from config.properties
-     * @return
+     * @return brokerUrl
      */
     public String getUrl(){
         return brokerUrl;
@@ -56,7 +56,7 @@ public class ConfigReader {
 
     /**
      * returns the MQTT-Broker-Port from config.properties
-     * @return
+     * @return brokerPort
      */
     public int getPort(){
         return brokerPort;
@@ -64,7 +64,7 @@ public class ConfigReader {
 
     /**
      * returns the MQTT-Topic for sending from config.properties
-     * @return
+     * @return topic
      */
     public String  getTopicSend(){
         return topic;
@@ -72,7 +72,7 @@ public class ConfigReader {
 
     /**
      * returns the MQTT-Topic for recieving from config.properties
-     * @return
+     * @return topicRecieve
      */
     public String  getTopicRecieve(){
         return topicRecieve;
