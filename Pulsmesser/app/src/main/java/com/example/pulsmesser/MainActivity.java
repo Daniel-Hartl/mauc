@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.appcompat.widget.Toolbar;
+import android.content.res.AssetManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         configReader = new ConfigReader();
+
+        configReader.loadConfig(this);
         databaseManager = new DatabaseManager(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());

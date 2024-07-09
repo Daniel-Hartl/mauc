@@ -1,11 +1,13 @@
 package com.example.pulsmesser;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 public class ConfigReader {
     private String username;
     private String wifiSsid;
@@ -15,8 +17,9 @@ public class ConfigReader {
     private String topic;
     private String topicRecieve;
 
-    private void loadConfig(AssetManager assetManager) {
+    public void loadConfig(Context context) {
         try {
+            AssetManager assetManager = context.getAssets();
             InputStream inputStream = assetManager.open("config.properties");
             Properties properties = new Properties();
             properties.load(inputStream);
